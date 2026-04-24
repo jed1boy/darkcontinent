@@ -268,6 +268,49 @@
       padding: 24px;
     }
 
+    .dataset-collapse {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .dataset-collapse > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 16px 20px;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--accent);
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid transparent;
+    }
+
+    .dataset-collapse > summary::-webkit-details-marker { display: none; }
+
+    .dataset-collapse[open] > summary {
+      border-bottom-color: var(--border);
+    }
+
+    .dataset-collapse__chev {
+      color: var(--text-dim);
+      font-size: 0.7rem;
+      transition: transform 0.2s ease;
+    }
+
+    .dataset-collapse[open] .dataset-collapse__chev {
+      transform: rotate(90deg);
+    }
+
+    .dataset-collapse .panel {
+      border: none;
+      border-radius: 0;
+    }
+
     /* ── TABLE STYLES ────────────────────────────── */
     .table-wrap {
       overflow-x: auto;
@@ -641,9 +684,14 @@
       After completion, commit and open your PR to main.
     </div>
 
+    <details class="dataset-collapse" id="datasetExplorerCollapse" open>
+      <summary>
+        <span>Data table <span style="color:var(--text-dim); font-size:0.75rem; font-weight:400;">(click to show or hide)</span></span>
+        <span class="dataset-collapse__chev" aria-hidden="true">▶</span>
+      </summary>
     <div class="panel">
       <div class="toolbar">
-        <input type="text" id="filterInput" placeholder="Filter by student name..." />
+        <input type="text" id="filterInput" placeholder="Filter by user ID (e.g. U00001) or label…" />
         <select id="sortSelect">
           <option value="">Sort by...</option>
           <option value="name">Name</option>
@@ -652,9 +700,10 @@
           <option value="grade">Grade</option>
           <option value="attendance">Attendance %</option>
         </select>
-        <button onclick="applyFilterSort()">Apply</button>
-        <button onclick="resetTable()">Reset</button>
+        <button type="button" onclick="applyFilterSort()">Apply</button>
+        <button type="button" onclick="resetTable()">Reset</button>
         <span class="count-badge" id="rowCount">— rows</span>
+        <button type="button" id="btnToggleRowPreview" hidden onclick="toggleDatasetRowPreview()">Show all rows</button>
       </div>
 
       <div class="table-wrap">
@@ -662,28 +711,22 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>Student Name</th>
+              <th>User / label</th>
               <th>Study Hours/Week</th>
               <th>Attendance %</th>
               <th>Midterm Score</th>
               <th>Final Score</th>
               <th>Assignments Done</th>
               <th>Sleep Hrs/Night</th>
-              <th>Part-time Job</th>
+              <th>Addicted</th>
               <th>Grade</th>
             </tr>
           </thead>
-          <tbody id="tableBody">
-            <!-- Student 1: renderTable() will populate this -->
-            <tr>
-              <td colspan="10" style="text-align:center; color:var(--text-dim); font-family:var(--mono); padding:40px;">
-                ⌛ Waiting for Student 1 to implement loadDataset() and renderTable()
-              </td>
-            </tr>
-          </tbody>
+          <tbody id="tableBody"></tbody>
         </table>
       </div>
     </div><!-- /panel -->
+    </details>
   </section>
 
 
@@ -710,7 +753,7 @@
     │  HOW TO ACCESS DATA:                                            │
     │  - window.DS holds the full dataset array (set by Student 1)   │
     │  - Each row has: name, studyHours, attendance, midterm,         │
-    │                  score, assignments, sleep, job, grade          │
+    │                  score, assignments, sleep, addicted, grade     │
     │                                                                 │
     │  CHART.JS IS ALREADY LOADED — use Chart object directly         │
     │                                                                 │
@@ -890,33 +933,12 @@
 "use strict";
 
 /* ─────────────────────────────────────────────────────────────────
-   SHARED DATASET (read-only — do NOT modify)
-   This simulates a CSV file already committed to the repository.
-   Structure: { name, studyHours, attendance, midterm, score,
-                assignments, sleep, job, grade }
+   SHARED DATASET — loaded from dataset.csv by Student 1 (loadDataset).
+   Same folder as this HTML; use a local HTTP server (Live Server, npx serve, etc.)
+   so fetch can read dataset.csv. file:// URLs block fetch.
+   Row shape: { name, studyHours, attendance, midterm, score,
+                assignments, sleep, addicted, grade }
 ────────────────────────────────────────────────────────────────── */
-const RAW_DATA = [
-  { name:"Ana Reyes",       studyHours:18, attendance:95, midterm:87, score:91, assignments:10, sleep:7, job:false, grade:"A" },
-  { name:"Ben Santos",      studyHours:10, attendance:78, midterm:65, score:68, assignments:7,  sleep:6, job:true,  grade:"C" },
-  { name:"Clara Tan",       studyHours:22, attendance:98, midterm:94, score:97, assignments:10, sleep:8, job:false, grade:"A" },
-  { name:"Diego Flores",    studyHours:8,  attendance:60, midterm:52, score:55, assignments:5,  sleep:5, job:true,  grade:"D" },
-  { name:"Elena Cruz",      studyHours:15, attendance:88, midterm:78, score:82, assignments:9,  sleep:7, job:false, grade:"B" },
-  { name:"Felix Lim",       studyHours:12, attendance:82, midterm:72, score:75, assignments:8,  sleep:6, job:true,  grade:"C" },
-  { name:"Grace Mendoza",   studyHours:20, attendance:96, midterm:90, score:93, assignments:10, sleep:8, job:false, grade:"A" },
-  { name:"Henry Ong",       studyHours:6,  attendance:55, midterm:45, score:50, assignments:4,  sleep:5, job:true,  grade:"D" },
-  { name:"Iris Villanueva", studyHours:17, attendance:91, midterm:83, score:86, assignments:9,  sleep:7, job:false, grade:"B" },
-  { name:"Jay Aquino",      studyHours:14, attendance:85, midterm:76, score:79, assignments:8,  sleep:7, job:false, grade:"B" },
-  { name:"Karen Delos",     studyHours:9,  attendance:70, midterm:60, score:63, assignments:6,  sleep:6, job:true,  grade:"C" },
-  { name:"Luis Ramos",      studyHours:21, attendance:97, midterm:92, score:95, assignments:10, sleep:8, job:false, grade:"A" },
-  { name:"Maria Dela Cruz", studyHours:16, attendance:89, midterm:80, score:84, assignments:9,  sleep:7, job:true,  grade:"B" },
-  { name:"Noel Bautista",   studyHours:11, attendance:75, midterm:68, score:71, assignments:7,  sleep:6, job:false, grade:"C" },
-  { name:"Olivia Pascual",  studyHours:19, attendance:94, midterm:88, score:90, assignments:10, sleep:8, job:false, grade:"A" },
-  { name:"Paulo Jimenez",   studyHours:7,  attendance:62, midterm:50, score:53, assignments:5,  sleep:5, job:true,  grade:"D" },
-  { name:"Quinn Serrano",   studyHours:13, attendance:80, midterm:73, score:76, assignments:8,  sleep:7, job:false, grade:"C" },
-  { name:"Rosa Aguilar",    studyHours:23, attendance:99, midterm:96, score:98, assignments:10, sleep:9, job:false, grade:"A" },
-  { name:"Sam Torres",      studyHours:10, attendance:74, midterm:66, score:69, assignments:7,  sleep:6, job:true,  grade:"C" },
-  { name:"Tina Guerrero",   studyHours:15, attendance:87, midterm:79, score:81, assignments:9,  sleep:7, job:false, grade:"B" },
-];
 
 /* Global dataset — Student 1 sets this; Students 2 & 3 read from it */
 window.DS = [];
@@ -947,94 +969,267 @@ function onDataReady() {
    STUDENT 1 — DATASET ENGINE & TABLE (branch: feature/data-engine)
 ═══════════════════════════════════════════════════════════════════ */
 
-/**
- * STUDENT 1 TODO — loadDataset()
- *
- * PURPOSE: Load RAW_DATA into window.DS and trigger the rest of the app.
- *
- * STEPS:
- *  1. Assign RAW_DATA to window.DS (a copy is fine: [...RAW_DATA])
- *  2. Call renderTable(window.DS) to populate the HTML table
- *  3. Call onDataReady() so Students 2 & 3 can initialize their sections
- *  4. Update #rowCount with the total number of rows
- */
-function loadDataset() {
-  // TODO: Implement this function
-  // Hint: window.DS = [...RAW_DATA];
-  // Hint: renderTable(window.DS);
-  // Hint: document.getElementById('rowCount').textContent = window.DS.length + ' rows';
-  // Hint: onDataReady();
+const TABLE_PREVIEW_LIMIT = 50;
+let lastTableRows = [];
+let datasetTableShowAll = false;
 
-  console.warn("⚠ Student 1: loadDataset() is not yet implemented.");
+function clamp(n, lo, hi) {
+  return Math.min(hi, Math.max(lo, n));
+}
+
+function num(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+/** Parse simple CSV (comma-separated, no embedded commas in fields for this dataset). */
+function parseCsvToObjects(text) {
+  const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "");
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(",").map((h) => h.trim());
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const parts = lines[i].split(",");
+    if (parts.length < headers.length) continue;
+    const obj = {};
+    for (let j = 0; j < headers.length; j++) {
+      obj[headers[j]] = parts[j] !== undefined ? String(parts[j]).trim() : "";
+    }
+    rows.push(obj);
+  }
+  return rows;
+}
+
+function scoreToGrade(s) {
+  if (s >= 90) return "A";
+  if (s >= 80) return "B";
+  if (s >= 70) return "C";
+  return "D";
 }
 
 /**
- * STUDENT 1 TODO — renderTable(data)
- *
- * PURPOSE: Dynamically build and insert table rows into #tableBody.
- *
- * @param {Array} data - Array of student objects from RAW_DATA
- *
- * STEPS:
- *  1. Clear #tableBody
- *  2. If data is empty, show a "No results found" row
- *  3. For each student object, create a <tr> with <td> cells for every column
- *  4. Apply CSS classes: 'numeric' to number cells, 'grade-A/B/C/D' to grade cells
- *  5. Format booleans: job=true → "Yes", job=false → "No"
- *
- * EXAMPLE ROW FORMAT:
- *  <tr>
- *    <td>1</td>
- *    <td>Ana Reyes</td>
- *    <td class="numeric">18</td>
- *    ...
- *    <td class="grade-A">A</td>
- *  </tr>
+ * Map one dataset.csv row into the app student shape (derived metrics from usage/addiction columns).
+ * attendance: derived proxy — lower daily screen time implies higher engagement score (0–100).
+ */
+function csvRowToStudent(row) {
+  const daily = num(row.daily_screen_time_hours);
+  const work = num(row.work_study_hours);
+  const sleepH = num(row.sleep_hours);
+  const addicted = num(row.addicted_label);
+  const stress = String(row.stress_level || "");
+  const stressPenalty = stress === "High" ? 15 : stress === "Medium" ? 8 : 0;
+  const attendance = clamp(100 - daily * 6, 0, 100);
+  const midterm = clamp(num(row.social_media_hours) * 12, 0, 100);
+  const score = clamp(100 - addicted * 35 - stressPenalty - daily * 2, 0, 100);
+  const assignments = clamp(Math.round(num(row.app_opens_per_day) / 30), 0, 10);
+  const userId = String(row.user_id || "").trim();
+  const name = userId ? "Student " + userId : "";
+  return {
+    name,
+    studyHours: work,
+    attendance,
+    midterm,
+    score,
+    assignments,
+    sleep: sleepH,
+    addicted: addicted === 1,
+    grade: scoreToGrade(score),
+  };
+}
+
+function gradeCellClass(grade) {
+  const c = String(grade || "").toUpperCase();
+  if (c === "A" || c === "B" || c === "C" || c === "D") return "grade-" + c;
+  return "grade-D";
+}
+
+const GRADE_SORT_RANK = { A: 4, B: 3, C: 2, D: 1 };
+
+function sortValueForKey(row, sortKey) {
+  if (sortKey === "grade") return GRADE_SORT_RANK[String(row.grade).toUpperCase()] ?? -Infinity;
+  const n = Number(row[sortKey]);
+  return Number.isFinite(n) ? n : -Infinity;
+}
+
+function showTableStatusRow(message) {
+  lastTableRows = [];
+  const btn = document.getElementById("btnToggleRowPreview");
+  if (btn) btn.hidden = true;
+  const tbody = document.getElementById("tableBody");
+  if (!tbody) return;
+  tbody.replaceChildren();
+  const tr = document.createElement("tr");
+  const td = document.createElement("td");
+  td.colSpan = 10;
+  td.textContent = message;
+  td.style.textAlign = "center";
+  td.style.color = "var(--text-dim)";
+  td.style.fontFamily = "var(--mono)";
+  td.style.padding = "40px";
+  tr.appendChild(td);
+  tbody.appendChild(tr);
+}
+
+function updateRowCountAndPreviewControls() {
+  const rowCountEl = document.getElementById("rowCount");
+  const btn = document.getElementById("btnToggleRowPreview");
+  const total = lastTableRows.length;
+  if (rowCountEl) {
+    if (total === 0) {
+      rowCountEl.textContent = "0 rows";
+    } else if (total <= TABLE_PREVIEW_LIMIT || datasetTableShowAll) {
+      rowCountEl.textContent = total + " rows";
+    } else {
+      rowCountEl.textContent = TABLE_PREVIEW_LIMIT + " of " + total + " shown";
+    }
+  }
+  if (btn) {
+    if (total <= TABLE_PREVIEW_LIMIT) {
+      btn.hidden = true;
+    } else {
+      btn.hidden = false;
+      btn.textContent = datasetTableShowAll
+        ? "Show first " + TABLE_PREVIEW_LIMIT + " only"
+        : "Show all rows (" + total + ")";
+    }
+  }
+}
+
+function toggleDatasetRowPreview() {
+  datasetTableShowAll = !datasetTableShowAll;
+  renderTable(lastTableRows);
+}
+
+/**
+ * Load dataset.csv into window.DS and trigger the rest of the app.
+ * Use a local HTTP server (not file://) so fetch can read dataset.csv.
+ */
+async function loadDataset() {
+  const rowCountEl = document.getElementById("rowCount");
+  const csvUrl = new URL("dataset.csv", window.location.href).href;
+  try {
+    if (window.location.protocol === "file:") {
+      throw new Error("file-protocol");
+    }
+    const res = await fetch(csvUrl);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const text = await res.text();
+    const rawRows = parseCsvToObjects(text);
+    window.DS = rawRows.map(csvRowToStudent);
+    datasetTableShowAll = false;
+    renderTable(window.DS);
+    onDataReady();
+  } catch (err) {
+    console.error(err);
+    window.DS = [];
+    if (rowCountEl) rowCountEl.textContent = "0 rows";
+    datasetTableShowAll = false;
+    if (err && err.message === "file-protocol") {
+      showTableStatusRow(
+        "Cannot load dataset.csv from a file:// URL. Open this folder with a local server (VS Code Live Server, or run: npx serve) and open the page at http://localhost:… so dataset.csv can load next to this HTML file."
+      );
+    } else {
+      showTableStatusRow(
+        "Could not load dataset.csv. Check that it sits in the same folder as this HTML file and you are using http://localhost (not file://). URL tried: " + csvUrl
+      );
+    }
+    onDataReady();
+  }
+}
+
+/**
+ * Dynamically build and insert table rows into #tableBody.
+ * @param {Array} data - Array of student objects
  */
 function renderTable(data) {
-  // TODO: Implement this function
-  console.warn("⚠ Student 1: renderTable() is not yet implemented.");
+  const tbody = document.getElementById("tableBody");
+  if (!tbody) return;
+  tbody.replaceChildren();
+  lastTableRows = Array.isArray(data) ? data.slice() : [];
+  if (lastTableRows.length === 0) {
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = 10;
+    td.textContent = "No results found";
+    td.style.textAlign = "center";
+    td.style.color = "var(--text-dim)";
+    td.style.fontFamily = "var(--mono)";
+    td.style.padding = "40px";
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    updateRowCountAndPreviewControls();
+    return;
+  }
+  const overLimit = lastTableRows.length > TABLE_PREVIEW_LIMIT;
+  const displayList =
+    overLimit && !datasetTableShowAll
+      ? lastTableRows.slice(0, TABLE_PREVIEW_LIMIT)
+      : lastTableRows;
+  const frag = document.createDocumentFragment();
+  displayList.forEach((row, i) => {
+    const tr = document.createElement("tr");
+    const addicted = Boolean(row.addicted);
+    const cells = [
+      { text: String(i + 1), numeric: false, grade: false },
+      { text: String(row.name ?? ""), numeric: false, grade: false },
+      { text: String(row.studyHours), numeric: true, grade: false },
+      { text: String(row.attendance), numeric: true, grade: false },
+      { text: String(row.midterm), numeric: true, grade: false },
+      { text: String(row.score), numeric: true, grade: false },
+      { text: String(row.assignments), numeric: true, grade: false },
+      { text: String(row.sleep), numeric: true, grade: false },
+      { text: addicted ? "Yes" : "No", numeric: false, grade: false },
+      { text: String(row.grade ?? ""), numeric: false, grade: true },
+    ];
+    cells.forEach((c) => {
+      const td = document.createElement("td");
+      td.textContent = c.text;
+      if (c.numeric) td.classList.add("numeric");
+      if (c.grade) td.classList.add(gradeCellClass(row.grade));
+      tr.appendChild(td);
+    });
+    frag.appendChild(tr);
+  });
+  tbody.appendChild(frag);
+  updateRowCountAndPreviewControls();
 }
 
 /**
- * STUDENT 1 TODO — applyFilterSort()
- *
- * PURPOSE: Filter by name and sort by selected column, then re-render.
- *
- * STEPS:
- *  1. Read the value from #filterInput (case-insensitive name filter)
- *  2. Read the selected option from #sortSelect
- *  3. Filter window.DS by name, then sort the result
- *  4. Call renderTable(filtered + sorted data)
- *  5. Update #rowCount
- *
- * SORT KEYS match the property names in RAW_DATA:
- *  'name' → alphabetical, others → numeric descending
+ * Filter by name and sort by selected column, then re-render.
+ * 'name' → ascending; studyHours, score, grade, attendance → numeric descending.
  */
 function applyFilterSort() {
-  // TODO: Implement this function
-  console.warn("⚠ Student 1: applyFilterSort() is not yet implemented.");
+  const input = document.getElementById("filterInput");
+  const select = document.getElementById("sortSelect");
+  const q = (input && input.value ? input.value : "").trim().toLowerCase();
+  const sortKey = select && select.value ? select.value : "";
+  let rows = Array.isArray(window.DS) ? [...window.DS] : [];
+  if (q) {
+    rows = rows.filter((r) => String(r.name).toLowerCase().includes(q));
+  }
+  if (sortKey) {
+    rows.sort((a, b) => {
+      if (sortKey === "name") {
+        return String(a.name).localeCompare(String(b.name), undefined, { sensitivity: "base" });
+      }
+      return sortValueForKey(b, sortKey) - sortValueForKey(a, sortKey);
+    });
+  }
+  datasetTableShowAll = false;
+  renderTable(rows);
 }
 
-/**
- * STUDENT 1 TODO — resetTable()
- *
- * PURPOSE: Clear filters and restore original table.
- *
- * STEPS:
- *  1. Clear #filterInput value
- *  2. Reset #sortSelect to ""
- *  3. Call renderTable(window.DS) to restore full dataset
- *  4. Update #rowCount
- */
 function resetTable() {
-  // TODO: Implement this function
-  console.warn("⚠ Student 1: resetTable() is not yet implemented.");
+  const input = document.getElementById("filterInput");
+  const select = document.getElementById("sortSelect");
+  if (input) input.value = "";
+  if (select) select.value = "";
+  datasetTableShowAll = false;
+  renderTable(window.DS);
 }
 
-/* Student 1 entry point — runs when DOM is ready */
-document.addEventListener('DOMContentLoaded', () => {
-  loadDataset(); // TODO: This call is already here — just implement the function above
+document.addEventListener("DOMContentLoaded", () => {
+  loadDataset().catch((err) => console.error(err));
 });
 
 
