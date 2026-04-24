@@ -691,7 +691,7 @@
       </summary>
     <div class="panel">
       <div class="toolbar">
-        <input type="text" id="filterInput" placeholder="Filter by student name..." />
+        <input type="text" id="filterInput" placeholder="Filter by user ID (e.g. U00001) or label…" />
         <select id="sortSelect">
           <option value="">Sort by...</option>
           <option value="name">Name</option>
@@ -711,14 +711,14 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>Student Name</th>
+              <th>User / label</th>
               <th>Study Hours/Week</th>
               <th>Attendance %</th>
               <th>Midterm Score</th>
               <th>Final Score</th>
               <th>Assignments Done</th>
               <th>Sleep Hrs/Night</th>
-              <th>Part-time Job</th>
+              <th>Addicted</th>
               <th>Grade</th>
             </tr>
           </thead>
@@ -753,7 +753,7 @@
     │  HOW TO ACCESS DATA:                                            │
     │  - window.DS holds the full dataset array (set by Student 1)   │
     │  - Each row has: name, studyHours, attendance, midterm,         │
-    │                  score, assignments, sleep, job, grade          │
+    │                  score, assignments, sleep, addicted, grade     │
     │                                                                 │
     │  CHART.JS IS ALREADY LOADED — use Chart object directly         │
     │                                                                 │
@@ -937,7 +937,7 @@
    Same folder as this HTML; use a local HTTP server (Live Server, npx serve, etc.)
    so fetch can read dataset.csv. file:// URLs block fetch.
    Row shape: { name, studyHours, attendance, midterm, score,
-                assignments, sleep, job, grade }
+                assignments, sleep, addicted, grade }
 ────────────────────────────────────────────────────────────────── */
 
 /* Global dataset — Student 1 sets this; Students 2 & 3 read from it */
@@ -1022,15 +1022,17 @@ function csvRowToStudent(row) {
   const midterm = clamp(num(row.social_media_hours) * 12, 0, 100);
   const score = clamp(100 - addicted * 35 - stressPenalty - daily * 2, 0, 100);
   const assignments = clamp(Math.round(num(row.app_opens_per_day) / 30), 0, 10);
+  const userId = String(row.user_id || "").trim();
+  const name = userId ? "Student " + userId : "";
   return {
-    name: String(row.user_id || ""),
+    name,
     studyHours: work,
     attendance,
     midterm,
     score,
     assignments,
     sleep: sleepH,
-    job: addicted === 1,
+    addicted: addicted === 1,
     grade: scoreToGrade(score),
   };
 }
@@ -1163,8 +1165,10 @@ function renderTable(data) {
     overLimit && !datasetTableShowAll
       ? lastTableRows.slice(0, TABLE_PREVIEW_LIMIT)
       : lastTableRows;
+  const frag = document.createDocumentFragment();
   displayList.forEach((row, i) => {
     const tr = document.createElement("tr");
+    const addicted = Boolean(row.addicted);
     const cells = [
       { text: String(i + 1), numeric: false, grade: false },
       { text: String(row.name ?? ""), numeric: false, grade: false },
@@ -1174,7 +1178,7 @@ function renderTable(data) {
       { text: String(row.score), numeric: true, grade: false },
       { text: String(row.assignments), numeric: true, grade: false },
       { text: String(row.sleep), numeric: true, grade: false },
-      { text: row.job ? "Yes" : "No", numeric: false, grade: false },
+      { text: addicted ? "Yes" : "No", numeric: false, grade: false },
       { text: String(row.grade ?? ""), numeric: false, grade: true },
     ];
     cells.forEach((c) => {
@@ -1184,8 +1188,9 @@ function renderTable(data) {
       if (c.grade) td.classList.add(gradeCellClass(row.grade));
       tr.appendChild(td);
     });
-    tbody.appendChild(tr);
+    frag.appendChild(tr);
   });
+  tbody.appendChild(frag);
   updateRowCountAndPreviewControls();
 }
 
