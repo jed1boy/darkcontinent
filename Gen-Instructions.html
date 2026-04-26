@@ -421,14 +421,15 @@
     .chart-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
+      gap: 24px;
     }
 
     .chart-box {
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
-      padding: 20px;
+      padding: 24px;
+      min-height: 380px;
     }
 
     .chart-box h4 {
@@ -440,10 +441,10 @@
       margin-bottom: 16px;
     }
 
-    .chart-box canvas { max-height: 240px; }
+    .chart-box canvas { max-height: 320px; width: 100%; }
 
     .chart-placeholder {
-      height: 200px;
+      height: 280px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1276,10 +1277,10 @@ document.addEventListener("DOMContentLoaded", () => {
 function getChartDefaults() {
   return {
     responsive: true,
-    maintainAspectRatio: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
-        labels: { color: '#6b748f', font: { family: 'Courier Prime', size: 11 } }
+        labels: { color: '#6b748f', font: { family: 'Courier Prime', size: 12 } }
       },
       tooltip: {
         backgroundColor: '#1c2030',
@@ -1287,18 +1288,20 @@ function getChartDefaults() {
         borderWidth: 1,
         titleColor: '#f0b429',
         bodyColor: '#d4daf0',
-        titleFont: { family: 'Courier Prime' },
-        bodyFont: { family: 'Courier Prime' }
+        titleFont: { family: 'Courier Prime', size: 12 },
+        bodyFont: { family: 'Courier Prime', size: 11 }
       }
     },
     scales: {
       x: {
-        ticks: { color: '#6b748f', font: { family: 'Courier Prime', size: 10 } },
-        grid:  { color: '#2a2f45' }
+        ticks: { color: '#6b748f', font: { family: 'Courier Prime', size: 11 } },
+        grid:  { color: '#2a2f45' },
+        title: { color: '#6b748f', font: { family: 'Courier Prime', size: 12 } }
       },
       y: {
-        ticks: { color: '#6b748f', font: { family: 'Courier Prime', size: 10 } },
-        grid:  { color: '#2a2f45' }
+        ticks: { color: '#6b748f', font: { family: 'Courier Prime', size: 11 } },
+        grid:  { color: '#2a2f45' },
+        title: { color: '#6b748f', font: { family: 'Courier Prime', size: 12 } }
       }
     }
   };
@@ -1477,7 +1480,7 @@ function drawBarChart(canvasId, data) {
           display: rows.length > 0,
           text: "All " + rows.length + " rows grouped into " + bins.length + " study-hour bins",
           color: "#6b748f",
-          font: { family: "Courier Prime", size: 10 },
+          font: { family: "Courier Prime", size: 11 },
         },
       },
       scales: {
@@ -1540,11 +1543,11 @@ function drawScatterPlot(canvasId, data) {
           type: "scatter",
           label: "Students",
           data: scatterPts,
-          backgroundColor: "rgba(62, 207, 207, 0.35)",
-          borderColor: "rgba(62, 207, 207, 0.9)",
+          backgroundColor: "rgba(62, 207, 207, 0.25)",
+          borderColor: "rgba(62, 207, 207, 0.7)",
           borderWidth: 1,
-          pointRadius: 2.5,
-          pointHoverRadius: 5,
+          pointRadius: 3,
+          pointHoverRadius: 6,
           order: 2,
         },
         {
@@ -1570,7 +1573,7 @@ function drawScatterPlot(canvasId, data) {
           display: true,
           text: "Attendance and score are derived indices from the CSV usage fields",
           color: "#6b748f",
-          font: { family: "Courier Prime", size: 10 },
+          font: { family: "Courier Prime", size: 11 },
         },
         tooltip: Object.assign({}, defaults.plugins.tooltip, {
           callbacks: {
@@ -1668,21 +1671,21 @@ function drawHistogram(canvasId, data) {
           backgroundColor: "rgba(224, 92, 106, 0.75)",
           borderColor: "rgba(224, 92, 106, 1)",
           borderWidth: 1,
-          barPercentage: 1.0,
-          categoryPercentage: 1.0,
+          barPercentage: 0.85,
+          categoryPercentage: 0.9,
         },
       ],
     },
     options: {
       responsive: defaults.responsive,
-      maintainAspectRatio: defaults.maintainAspectRatio,
+      maintainAspectRatio: false,
       plugins: {
         legend: Object.assign({}, defaults.plugins.legend, { display: false }),
         subtitle: {
           display: true,
           text: "Final score is a derived composite index, not a direct CSV column",
           color: "#6b748f",
-          font: { family: "Courier Prime", size: 10 },
+          font: { family: "Courier Prime", size: 11 },
         },
         tooltip: defaults.plugins.tooltip,
       },
@@ -1773,15 +1776,18 @@ function drawPieChart(canvasId, data) {
     },
     options: {
       responsive: defaults.responsive,
-      maintainAspectRatio: defaults.maintainAspectRatio,
-      cutout: "55%",
+      maintainAspectRatio: false,
+      cutout: "60%",
       plugins: {
-        legend: defaults.plugins.legend,
+        legend: Object.assign({}, defaults.plugins.legend, { 
+          display: true,
+          position: 'right'
+        }),
         subtitle: {
           display: true,
           text: "Grades are A-D bands from the derived score",
           color: "#6b748f",
-          font: { family: "Courier Prime", size: 10 },
+          font: { family: "Courier Prime", size: 11 },
         },
         tooltip: Object.assign({}, defaults.plugins.tooltip, {
           callbacks: {
