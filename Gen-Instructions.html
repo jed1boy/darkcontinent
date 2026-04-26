@@ -854,10 +854,10 @@
     -->
 
     <div class="todo-callout" style="border-left-color: var(--accent3); color: var(--accent3); background: rgba(224,92,106,0.06); border-color: rgba(224,92,106,0.25);">
-      <strong>⚠ TODO — Student 3</strong>
-      Implement all seven statistical functions below the comment block in the JS section.
-      Then call <code>renderStats(window.DS)</code> inside <code>onDataReady()</code>.
-      All placeholder "—" values below should be replaced by computed results.
+      <strong>✓ Complete — Student 3</strong>
+      The statistical functions below compute descriptive statistics, correlation,
+      and linear regression, then <code>renderStats(window.DS)</code> fills this section
+      when the dataset is ready.
     </div>
 
     <!-- Summary stat cards -->
@@ -949,11 +949,9 @@ window.CHARTS = {};
 /* Called automatically when the dataset is ready (Student 1 triggers this) */
 function onDataReady() {
   if (Array.isArray(window.DS) && window.DS.length > 0) {
+    renderStats(window.DS);
     initCharts();
   }
-
-  // Student 3: call your stats renderer here
-  // Example: renderStats(window.DS);
 
   console.log("✅ onDataReady() fired. window.DS has", window.DS.length, "rows.");
 }
@@ -1814,7 +1812,7 @@ function drawPieChart(canvasId, data) {
 ═══════════════════════════════════════════════════════════════════ */
 
 /**
- * STUDENT 3 TODO — mean(arr)
+ * STUDENT 3 — mean(arr)
  *
  * PURPOSE: Compute the arithmetic mean of a numeric array.
  *
@@ -1827,14 +1825,33 @@ function drawPieChart(canvasId, data) {
  *   mean([10, 20, 30])  →  20.00
  *   mean([91, 68, 97])  →  85.33
  */
+function roundTo(value, places) {
+  return Number(value.toFixed(places));
+}
+
+function numericValues(arr) {
+  return (Array.isArray(arr) ? arr : [])
+    .map(function (value) {
+      return Number(value);
+    })
+    .filter(Number.isFinite);
+}
+
+function average(arr) {
+  const values = numericValues(arr);
+  if (values.length === 0) return 0;
+  const total = values.reduce(function (sum, value) {
+    return sum + value;
+  }, 0);
+  return total / values.length;
+}
+
 function mean(arr) {
-  // TODO: Implement this function
-  // Hint: use arr.reduce() to sum, then divide by arr.length
-  throw new Error("Student 3: mean() not implemented yet");
+  return roundTo(average(arr), 2);
 }
 
 /**
- * STUDENT 3 TODO — median(arr)
+ * STUDENT 3 — median(arr)
  *
  * PURPOSE: Find the middle value of a sorted array.
  *          For even-length arrays, average the two middle values.
@@ -1851,13 +1868,18 @@ function mean(arr) {
  *   median([1, 2, 3, 4])     →  2.50
  */
 function median(arr) {
-  // TODO: Implement this function
-  // Hint: [...arr].sort((a,b) => a-b) for a sorted copy (do not mutate original)
-  throw new Error("Student 3: median() not implemented yet");
+  const values = numericValues(arr).sort(function (a, b) {
+    return a - b;
+  });
+  const n = values.length;
+  if (n === 0) return 0;
+  const middle = Math.floor(n / 2);
+  const value = n % 2 === 1 ? values[middle] : (values[middle - 1] + values[middle]) / 2;
+  return roundTo(value, 2);
 }
 
 /**
- * STUDENT 3 TODO — mode(arr)
+ * STUDENT 3 — mode(arr)
  *
  * PURPOSE: Find the most frequently occurring value(s).
  *          If multiple values tie, return all of them joined by " & ".
@@ -1872,12 +1894,28 @@ function median(arr) {
  *  4. Return them joined by " & "
  */
 function mode(arr) {
-  // TODO: Implement this function
-  throw new Error("Student 3: mode() not implemented yet");
+  const values = numericValues(arr);
+  if (values.length === 0) return "—";
+  const counts = new Map();
+  values.forEach(function (value) {
+    counts.set(value, (counts.get(value) || 0) + 1);
+  });
+  const maxCount = Math.max.apply(null, Array.from(counts.values()));
+  return Array.from(counts.entries())
+    .filter(function (entry) {
+      return entry[1] === maxCount;
+    })
+    .map(function (entry) {
+      return entry[0];
+    })
+    .sort(function (a, b) {
+      return a - b;
+    })
+    .join(" & ");
 }
 
 /**
- * STUDENT 3 TODO — variance(arr)
+ * STUDENT 3 — variance(arr)
  *
  * PURPOSE: Compute the population variance of a numeric array.
  *
@@ -1890,13 +1928,17 @@ function mode(arr) {
  *   variance([2, 4, 4, 4, 5, 5, 7, 9])  →  4.00
  */
 function variance(arr) {
-  // TODO: Implement this function
-  // Hint: compute mean first, then average the squared differences
-  throw new Error("Student 3: variance() not implemented yet");
+  const values = numericValues(arr);
+  if (values.length === 0) return 0;
+  const avg = average(values);
+  const totalSquaredDiff = values.reduce(function (sum, value) {
+    return sum + Math.pow(value - avg, 2);
+  }, 0);
+  return roundTo(totalSquaredDiff / values.length, 2);
 }
 
 /**
- * STUDENT 3 TODO — stdDev(arr)
+ * STUDENT 3 — stdDev(arr)
  *
  * PURPOSE: Standard deviation — square root of population variance.
  *
@@ -1906,13 +1948,11 @@ function variance(arr) {
  * FORMULA: σ = √(variance(arr))
  */
 function stdDev(arr) {
-  // TODO: Implement this function
-  // Hint: Math.sqrt(variance(arr))
-  throw new Error("Student 3: stdDev() not implemented yet");
+  return roundTo(Math.sqrt(variance(arr)), 2);
 }
 
 /**
- * STUDENT 3 TODO — pearsonCorr(x, y)
+ * STUDENT 3 — pearsonCorr(x, y)
  *
  * PURPOSE: Pearson correlation coefficient r between two arrays.
  *          r ranges from -1 (perfect negative) to +1 (perfect positive).
@@ -1931,12 +1971,33 @@ function stdDev(arr) {
  *   Sign: positive = direct relationship, negative = inverse
  */
 function pearsonCorr(x, y) {
-  // TODO: Implement this function
-  throw new Error("Student 3: pearsonCorr() not implemented yet");
+  const pairs = numericPairs(x, y);
+  if (pairs.length === 0) return NaN;
+  const xs = pairs.map(function (pair) {
+    return pair[0];
+  });
+  const ys = pairs.map(function (pair) {
+    return pair[1];
+  });
+  const meanX = average(xs);
+  const meanY = average(ys);
+  let numerator = 0;
+  let sumSqX = 0;
+  let sumSqY = 0;
+  pairs.forEach(function (pair) {
+    const dx = pair[0] - meanX;
+    const dy = pair[1] - meanY;
+    numerator += dx * dy;
+    sumSqX += dx * dx;
+    sumSqY += dy * dy;
+  });
+  const denominator = Math.sqrt(sumSqX * sumSqY);
+  if (denominator === 0) return NaN;
+  return roundTo(numerator / denominator, 4);
 }
 
 /**
- * STUDENT 3 TODO — linearRegression(x, y)
+ * STUDENT 3 — linearRegression(x, y)
  *
  * PURPOSE: Simple linear regression — find the best-fit line y = mx + b.
  *
@@ -1953,13 +2014,54 @@ function pearsonCorr(x, y) {
  *
  * EXAMPLE OUTPUT: { slope: 2.1, intercept: 45.3, rSquared: 0.87 }
  */
+function numericPairs(x, y) {
+  const length = Math.min(Array.isArray(x) ? x.length : 0, Array.isArray(y) ? y.length : 0);
+  const pairs = [];
+  for (let i = 0; i < length; i++) {
+    const xVal = Number(x[i]);
+    const yVal = Number(y[i]);
+    if (Number.isFinite(xVal) && Number.isFinite(yVal)) {
+      pairs.push([xVal, yVal]);
+    }
+  }
+  return pairs;
+}
+
 function linearRegression(x, y) {
-  // TODO: Implement this function
-  throw new Error("Student 3: linearRegression() not implemented yet");
+  const pairs = numericPairs(x, y);
+  if (pairs.length === 0) {
+    return { slope: NaN, intercept: NaN, rSquared: NaN };
+  }
+  const xs = pairs.map(function (pair) {
+    return pair[0];
+  });
+  const ys = pairs.map(function (pair) {
+    return pair[1];
+  });
+  const meanX = average(xs);
+  const meanY = average(ys);
+  let numerator = 0;
+  let denominator = 0;
+  pairs.forEach(function (pair) {
+    const dx = pair[0] - meanX;
+    numerator += dx * (pair[1] - meanY);
+    denominator += dx * dx;
+  });
+  if (denominator === 0) {
+    return { slope: NaN, intercept: NaN, rSquared: NaN };
+  }
+  const slope = numerator / denominator;
+  const intercept = meanY - slope * meanX;
+  const r = pearsonCorr(xs, ys);
+  return {
+    slope: roundTo(slope, 4),
+    intercept: roundTo(intercept, 4),
+    rSquared: Number.isFinite(r) ? roundTo(r * r, 4) : NaN,
+  };
 }
 
 /**
- * STUDENT 3 TODO — renderStats(data)
+ * STUDENT 3 — renderStats(data)
  *
  * PURPOSE: Compute all statistics from data and update the DOM.
  *          Called from onDataReady() after Student 1 loads the dataset.
@@ -1982,9 +2084,85 @@ function linearRegression(x, y) {
  * EXAMPLE interpretation: "Strong Positive Correlation"
  */
 function renderStats(data) {
-  // TODO: Implement this function
-  // Hint: use try/catch so errors in your stat functions don't crash the page
-  console.warn("⚠ Student 3: renderStats() is not yet implemented.");
+  try {
+    const rows = Array.isArray(data) ? data : [];
+    const scores = rows
+      .map(function (row) {
+        return Number(row.score);
+      })
+      .filter(Number.isFinite);
+    const pairs = rows
+      .map(function (row) {
+        return [Number(row.studyHours), Number(row.score)];
+      })
+      .filter(function (pair) {
+        return Number.isFinite(pair[0]) && Number.isFinite(pair[1]);
+      });
+
+    if (scores.length === 0) return;
+
+    const hours = pairs.map(function (pair) {
+      return pair[0];
+    });
+    const pairedScores = pairs.map(function (pair) {
+      return pair[1];
+    });
+    const minScore = Math.min.apply(null, scores);
+    const maxScore = Math.max.apply(null, scores);
+    const scoreMean = mean(scores);
+    const scoreMedian = median(scores);
+    const scoreMode = mode(scores);
+    const scoreVariance = variance(scores);
+    const scoreStdDev = stdDev(scores);
+    const r = pearsonCorr(hours, pairedScores);
+    const fit = linearRegression(hours, pairedScores);
+
+    function setStatText(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+
+    function fmt(value, places) {
+      return Number.isFinite(value) ? Number(value).toFixed(places) : "—";
+    }
+
+    function corrInterpretation(value) {
+      if (!Number.isFinite(value)) return "N/A";
+      if (value === 0) return "Weak No Correlation";
+      const abs = Math.abs(value);
+      const strength = abs >= 0.7 ? "Strong" : abs >= 0.4 ? "Moderate" : "Weak";
+      const direction = value > 0 ? "Positive" : "Negative";
+      return strength + " " + direction + " Correlation";
+    }
+
+    const interceptSign = Number.isFinite(fit.intercept) && fit.intercept < 0 ? " - " : " + ";
+    const interceptText = Number.isFinite(fit.intercept) ? Math.abs(fit.intercept).toFixed(4) : "—";
+    const equation =
+      Number.isFinite(fit.slope) && Number.isFinite(fit.intercept)
+        ? "score = " + fit.slope.toFixed(4) + "·hours" + interceptSign + interceptText
+        : "—";
+
+    setStatText("statMean", fmt(scoreMean, 2));
+    setStatText("statMedian", fmt(scoreMedian, 2));
+    setStatText("statStdDev", fmt(scoreStdDev, 2));
+    setStatText("statMode", scoreMode);
+
+    setStatText("dCount", String(scores.length));
+    setStatText("dMin", fmt(minScore, 2));
+    setStatText("dMax", fmt(maxScore, 2));
+    setStatText("dRange", fmt(maxScore - minScore, 2));
+    setStatText("dVariance", fmt(scoreVariance, 2));
+    setStatText("dStdDev", fmt(scoreStdDev, 2));
+
+    setStatText("rPearson", fmt(r, 4));
+    setStatText("rInterp", corrInterpretation(r));
+    setStatText("rSlope", fmt(fit.slope, 4));
+    setStatText("rIntercept", fmt(fit.intercept, 4));
+    setStatText("rSquared", fmt(fit.rSquared, 4));
+    setStatText("rEquation", equation);
+  } catch (err) {
+    console.error("Student 3: renderStats() failed.", err);
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────
