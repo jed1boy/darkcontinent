@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DataSci Collab â€” Git Collaborative Project</title>
+    <title>DataSci Collab — Git Collaborative Project</title>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
@@ -529,7 +529,10 @@
     <header>
       <div class="header-left">
         <h1>DataSci Collab Dashboard</h1>
-        <p>Student Performance Dataset Â· Git Collaborative Activity</p>
+        <p>
+          Smartphone Usage and Addiction Analysis Dataset · Git Collaborative
+          Activity
+        </p>
       </div>
       <div class="git-badge">
         <span class="dot"></span>
@@ -540,8 +543,8 @@
     <main>
       <section class="section" id="sec-data">
         <div class="section-header">
-          <h2>01 Â· Dataset Explorer</h2>
-          <span class="owner-tag tag-s1">Student 1 Â· Repo Owner</span>
+          <h2>01 · Dataset Explorer</h2>
+          <span class="owner-tag tag-s1">Student 1 · Repo Owner</span>
         </div>
 
         <details class="dataset-collapse" id="datasetExplorerCollapse" open>
@@ -550,7 +553,7 @@
               >Data table
               <span class="hint">(click to show or hide)</span></span
             >
-            <span class="dataset-collapse__chev" aria-hidden="true">â–¶</span>
+            <span class="dataset-collapse__chev" aria-hidden="true">▶</span>
           </summary>
           <div class="panel">
             <div class="toolbar">
@@ -569,7 +572,7 @@
               </select>
               <button type="button" onclick="applyFilterSort()">Apply</button>
               <button type="button" onclick="resetTable()">Reset</button>
-              <span class="count-badge" id="rowCount">â€” rows</span>
+              <span class="count-badge" id="rowCount">— rows</span>
               <button
                 type="button"
                 id="btnToggleRowPreview"
@@ -605,15 +608,15 @@
 
       <section class="section" id="sec-viz">
         <div class="section-header">
-          <h2>02 Â· Visualizations</h2>
-          <span class="owner-tag tag-s2">Student 2 Â· Collaborator</span>
+          <h2>02 · Visualizations</h2>
+          <span class="owner-tag tag-s2">Student 2 · Collaborator</span>
         </div>
 
         <div class="chart-grid">
           <div class="chart-box">
             <h4>Study Hours vs Derived Score</h4>
             <div class="chart-placeholder" id="barPlaceholder">
-              <span>ðŸ“Š</span>
+              <span>📊</span>
               Chart appears when the CSV data is ready.
             </div>
             <canvas id="barChart"></canvas>
@@ -622,7 +625,7 @@
           <div class="chart-box">
             <h4>Derived Attendance % vs Derived Score</h4>
             <div class="chart-placeholder" id="scatterPlaceholder">
-              <span>ðŸ”µ</span>
+              <span>🔵</span>
               Chart appears when the CSV data is ready.
             </div>
             <canvas id="scatterChart"></canvas>
@@ -631,7 +634,7 @@
           <div class="chart-box">
             <h4>Derived Score Distribution</h4>
             <div class="chart-placeholder" id="histPlaceholder">
-              <span>ðŸ“ˆ</span>
+              <span>📈</span>
               Chart appears when the CSV data is ready.
             </div>
             <canvas id="histChart"></canvas>
@@ -640,7 +643,7 @@
           <div class="chart-box">
             <h4>Derived Grade Distribution</h4>
             <div class="chart-placeholder" id="piePlaceholder">
-              <span>ðŸ•</span>
+              <span>🍕</span>
               Chart appears when the CSV data is ready.
             </div>
             <canvas id="pieChart"></canvas>
@@ -650,36 +653,36 @@
 
       <section class="section" id="sec-stats">
         <div class="section-header">
-          <h2>03 Â· Statistical Analysis</h2>
-          <span class="owner-tag tag-s3">Student 3 Â· Collaborator</span>
+          <h2>03 · Statistical Analysis</h2>
+          <span class="owner-tag tag-s3">Student 3 · Collaborator</span>
         </div>
 
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-label">Mean Score</div>
             <div class="stat-value" id="statMean">
-              <span class="stat-placeholder">â€”</span>
+              <span class="stat-placeholder">—</span>
             </div>
             <div class="stat-sub">Final Score</div>
           </div>
           <div class="stat-card">
             <div class="stat-label">Median Score</div>
             <div class="stat-value" id="statMedian">
-              <span class="stat-placeholder">â€”</span>
+              <span class="stat-placeholder">—</span>
             </div>
             <div class="stat-sub">Final Score</div>
           </div>
           <div class="stat-card">
             <div class="stat-label">Std Deviation</div>
             <div class="stat-value" id="statStdDev">
-              <span class="stat-placeholder">â€”</span>
+              <span class="stat-placeholder">—</span>
             </div>
             <div class="stat-sub">Final Score</div>
           </div>
           <div class="stat-card">
             <div class="stat-label">Mode</div>
             <div class="stat-value" id="statMode">
-              <span class="stat-placeholder">â€”</span>
+              <span class="stat-placeholder">—</span>
             </div>
             <div class="stat-sub">Final Score</div>
           </div>
@@ -687,7 +690,7 @@
 
         <div class="analysis-row">
           <div class="analysis-panel">
-            <h4>Descriptive Statistics â€” Final Score</h4>
+            <h4>Descriptive Statistics — Final Score</h4>
             <ul class="stat-list">
               <li>
                 <span class="key">Count (n)</span>
@@ -1015,7 +1018,7 @@
           datasetTableShowAll = false;
           if (err && err.message === "file-protocol") {
             showTableStatusRow(
-              "Cannot load dataset.csv from a file:// URL. Open this folder with a local server (VS Code Live Server, or run: npx serve) and open the page at http://localhost:â€¦ so dataset.csv can load next to this HTML file.",
+              "Cannot load dataset.csv from a file:// URL. Open this folder with a local server (VS Code Live Server, or run: npx serve) and open the page at http://localhost:… so dataset.csv can load next to this HTML file.",
             );
           } else {
             showTableStatusRow(
@@ -1717,7 +1720,7 @@
 
       function mode(arr) {
         const values = numericValues(arr);
-        if (values.length === 0) return "â€”";
+        if (values.length === 0) return "—";
         const counts = new Map();
         values.forEach(function (value) {
           counts.set(value, (counts.get(value) || 0) + 1);
@@ -1884,15 +1887,15 @@
             Number.isFinite(fit.intercept) && fit.intercept < 0 ? " - " : " + ";
           const interceptText = Number.isFinite(fit.intercept)
             ? Math.abs(fit.intercept).toFixed(4)
-            : "â€”";
+            : "—";
           const equation =
             Number.isFinite(fit.slope) && Number.isFinite(fit.intercept)
               ? "score = " +
                 fit.slope.toFixed(4) +
-                "Â·hours" +
+                "·hours" +
                 interceptSign +
                 interceptText
-              : "â€”";
+              : "—";
 
           setStatText("statMean", fmt(scoreMean, 2));
           setStatText("statMedian", fmt(scoreMedian, 2));
