@@ -1,9 +1,9 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DataSci Collab — Git Collaborative Project</title>
+    <title>DataSci Collab â€” Git Collaborative Project</title>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
@@ -45,7 +45,6 @@
         color: var(--text);
         min-height: 100vh;
         padding: 0 0 80px;
-
         background-image: repeating-linear-gradient(
           0deg,
           transparent,
@@ -118,97 +117,6 @@
         max-width: 1300px;
         margin: 0 auto;
         padding: 40px 30px;
-      }
-
-      .contrib-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-bottom: 50px;
-      }
-
-      .contrib-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        padding: 20px;
-        position: relative;
-        overflow: hidden;
-        transition:
-          transform 0.2s,
-          box-shadow 0.2s;
-      }
-
-      .contrib-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-      }
-
-      .contrib-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-      }
-
-      .contrib-card.s1::before {
-        background: var(--accent);
-      }
-      .contrib-card.s2::before {
-        background: var(--accent2);
-      }
-      .contrib-card.s3::before {
-        background: var(--accent3);
-      }
-
-      .contrib-card .student-tag {
-        font-family: var(--mono);
-        font-size: 0.68rem;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        margin-bottom: 8px;
-      }
-
-      .s1 .student-tag {
-        color: var(--accent);
-      }
-      .s2 .student-tag {
-        color: var(--accent2);
-      }
-      .s3 .student-tag {
-        color: var(--accent3);
-      }
-
-      .contrib-card h3 {
-        font-size: 0.95rem;
-        font-weight: 600;
-        margin-bottom: 10px;
-      }
-
-      .contrib-card ul {
-        list-style: none;
-        font-size: 0.8rem;
-        color: var(--text-dim);
-        line-height: 1.7;
-      }
-
-      .contrib-card ul li::before {
-        content: "→ ";
-        color: var(--text-dim);
-      }
-
-      .branch-tag {
-        display: inline-block;
-        margin-top: 12px;
-        font-family: var(--mono);
-        font-size: 0.7rem;
-        background: var(--surface2);
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        padding: 3px 8px;
-        color: var(--text-dim);
       }
 
       .section {
@@ -287,28 +195,10 @@
         border-bottom: 1px solid transparent;
       }
 
-      .table-hint {
+      .dataset-collapse > summary .hint {
         color: var(--text-dim);
         font-size: 0.75rem;
         font-weight: 400;
-      }
-
-      .todo-s2 {
-        border-left-color: var(--accent2);
-        color: var(--accent2);
-        background: rgba(62, 207, 207, 0.06);
-        border-color: rgba(62, 207, 207, 0.25);
-      }
-
-      .todo-s3 {
-        border-left-color: var(--accent3);
-        color: var(--accent3);
-        background: rgba(224, 92, 106, 0.06);
-        border-color: rgba(224, 92, 106, 0.25);
-      }
-
-      .hidden-chart {
-        display: none;
       }
 
       .dataset-collapse > summary::-webkit-details-marker {
@@ -385,6 +275,9 @@
         color: var(--accent3);
       }
       tbody td.grade-D {
+        color: #e67e22;
+      }
+      tbody td.grade-F {
         color: #e05c6a;
       }
 
@@ -480,6 +373,7 @@
       .chart-box canvas {
         max-height: 320px;
         width: 100%;
+        display: none;
       }
 
       .chart-placeholder {
@@ -619,9 +513,6 @@
       }
 
       @media (max-width: 900px) {
-        .contrib-grid {
-          grid-template-columns: 1fr;
-        }
         .chart-grid {
           grid-template-columns: 1fr;
         }
@@ -638,7 +529,7 @@
     <header>
       <div class="header-left">
         <h1>DataSci Collab Dashboard</h1>
-        <p>Student Performance Dataset · Git Collaborative Activity</p>
+        <p>Student Performance Dataset Â· Git Collaborative Activity</p>
       </div>
       <div class="git-badge">
         <span class="dot"></span>
@@ -647,80 +538,26 @@
     </header>
 
     <main>
-      <div class="contrib-grid">
-        <div class="contrib-card s1">
-          <div class="student-tag">Student 1 · Repo Owner</div>
-          <h3>Dataset Engine &amp; Project Setup</h3>
-          <ul>
-            <li>Initialize the GitHub repository</li>
-            <li>Implement <code>loadDataset()</code></li>
-            <li>Implement <code>renderTable()</code></li>
-            <li>Implement filter &amp; sort logic</li>
-            <li>Invite collaborators &amp; protect main</li>
-          </ul>
-          <span class="branch-tag"
-            >branch: main (setup) → feature/data-engine</span
-          >
-        </div>
-
-        <div class="contrib-card s2">
-          <div class="student-tag">Student 2 · Collaborator</div>
-          <h3>Data Visualization Layer</h3>
-          <ul>
-            <li>Implement <code>drawBarChart()</code></li>
-            <li>Implement <code>drawScatterPlot()</code></li>
-            <li>Implement <code>drawHistogram()</code></li>
-            <li>Implement <code>drawPieChart()</code></li>
-            <li>Open and get PR merged into main</li>
-          </ul>
-          <span class="branch-tag">branch: feature/visualization</span>
-        </div>
-
-        <div class="contrib-card s3">
-          <div class="student-tag">Student 3 · Collaborator</div>
-          <h3>Statistical Analysis Engine</h3>
-          <ul>
-            <li>
-              Implement <code>mean()</code>, <code>median()</code>,
-              <code>mode()</code>
-            </li>
-            <li>Implement <code>stdDev()</code>, <code>variance()</code></li>
-            <li>Implement <code>pearsonCorr()</code></li>
-            <li>Implement <code>linearRegression()</code></li>
-            <li>Open and get PR merged into main</li>
-          </ul>
-          <span class="branch-tag">branch: feature/statistics</span>
-        </div>
-      </div>
-
       <section class="section" id="sec-data">
         <div class="section-header">
-          <h2>01 · Dataset Explorer</h2>
-          <span class="owner-tag tag-s1">Student 1 · Repo Owner</span>
-        </div>
-
-        <div class="todo-callout">
-          <strong>✓ Complete — Student 1</strong>
-          <code>loadDataset()</code> loads <code>dataset.csv</code> into
-          <code>window.DS</code>, <code>renderTable(data)</code> builds the
-          table, and the filter/sort toolbar is wired. Open this folder with a
-          local server (not <code>file://</code>) so the CSV can load.
+          <h2>01 Â· Dataset Explorer</h2>
+          <span class="owner-tag tag-s1">Student 1 Â· Repo Owner</span>
         </div>
 
         <details class="dataset-collapse" id="datasetExplorerCollapse" open>
           <summary>
             <span
               >Data table
-              <span class="table-hint">(click to show or hide)</span></span
+              <span class="hint">(click to show or hide)</span></span
             >
-            <span class="dataset-collapse__chev" aria-hidden="true">▶</span>
+            <span class="dataset-collapse__chev" aria-hidden="true">â–¶</span>
           </summary>
           <div class="panel">
             <div class="toolbar">
               <input
                 type="text"
                 id="filterInput"
-                placeholder="Filter by user ID (e.g. U00001) or label…"
+                placeholder="Filter by user ID (e.g. U00001) or labelâ€¦"
               />
               <select id="sortSelect" title="Sort by column">
                 <option value="">Sort by...</option>
@@ -732,7 +569,7 @@
               </select>
               <button type="button" onclick="applyFilterSort()">Apply</button>
               <button type="button" onclick="resetTable()">Reset</button>
-              <span class="count-badge" id="rowCount">— rows</span>
+              <span class="count-badge" id="rowCount">â€” rows</span>
               <button
                 type="button"
                 id="btnToggleRowPreview"
@@ -768,99 +605,81 @@
 
       <section class="section" id="sec-viz">
         <div class="section-header">
-          <h2>02 · Visualizations</h2>
-          <span class="owner-tag tag-s2">Student 2 · Collaborator</span>
-        </div>
-
-        <div class="todo-callout todo-s2">
-          <strong>✓ Complete — Student 2</strong>
-          <code>initCharts()</code> runs from <code>onDataReady()</code> when
-          <code>window.DS</code> has rows. <code>drawBarChart</code> (study-hour
-          bins vs mean derived score), <code>drawScatterPlot</code> (derived
-          attendance vs derived score), <code>drawHistogram</code> (derived
-          score bands), <code>drawPieChart</code> (derived grades A–D), with
-          <code>window.CHARTS</code> teardown in <code>initCharts()</code>.
+          <h2>02 Â· Visualizations</h2>
+          <span class="owner-tag tag-s2">Student 2 Â· Collaborator</span>
         </div>
 
         <div class="chart-grid">
           <div class="chart-box">
             <h4>Study Hours vs Derived Score</h4>
             <div class="chart-placeholder" id="barPlaceholder">
-              <span>📊</span>
+              <span>ðŸ“Š</span>
               Chart appears when the CSV data is ready.
             </div>
-            <canvas id="barChart" class="hidden-chart"></canvas>
+            <canvas id="barChart"></canvas>
           </div>
 
           <div class="chart-box">
             <h4>Derived Attendance % vs Derived Score</h4>
             <div class="chart-placeholder" id="scatterPlaceholder">
-              <span>🔵</span>
+              <span>ðŸ”µ</span>
               Chart appears when the CSV data is ready.
             </div>
-            <canvas id="scatterChart" class="hidden-chart"></canvas>
+            <canvas id="scatterChart"></canvas>
           </div>
 
           <div class="chart-box">
             <h4>Derived Score Distribution</h4>
             <div class="chart-placeholder" id="histPlaceholder">
-              <span>📈</span>
+              <span>ðŸ“ˆ</span>
               Chart appears when the CSV data is ready.
             </div>
-            <canvas id="histChart" class="hidden-chart"></canvas>
+            <canvas id="histChart"></canvas>
           </div>
 
           <div class="chart-box">
             <h4>Derived Grade Distribution</h4>
             <div class="chart-placeholder" id="piePlaceholder">
-              <span>🍕</span>
+              <span>ðŸ•</span>
               Chart appears when the CSV data is ready.
             </div>
-            <canvas id="pieChart" class="hidden-chart"></canvas>
+            <canvas id="pieChart"></canvas>
           </div>
         </div>
       </section>
 
       <section class="section" id="sec-stats">
         <div class="section-header">
-          <h2>03 · Statistical Analysis</h2>
-          <span class="owner-tag tag-s3">Student 3 · Collaborator</span>
-        </div>
-
-        <div class="todo-callout todo-s3">
-          <strong>✓ Complete — Student 3</strong>
-          The statistical functions below compute descriptive statistics,
-          correlation, and linear regression, then
-          <code>renderStats(window.DS)</code> fills this section when the
-          dataset is ready.
+          <h2>03 Â· Statistical Analysis</h2>
+          <span class="owner-tag tag-s3">Student 3 Â· Collaborator</span>
         </div>
 
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-label">Mean Score</div>
             <div class="stat-value" id="statMean">
-              <span class="stat-placeholder">—</span>
+              <span class="stat-placeholder">â€”</span>
             </div>
             <div class="stat-sub">Final Score</div>
           </div>
           <div class="stat-card">
             <div class="stat-label">Median Score</div>
             <div class="stat-value" id="statMedian">
-              <span class="stat-placeholder">—</span>
+              <span class="stat-placeholder">â€”</span>
             </div>
             <div class="stat-sub">Final Score</div>
           </div>
           <div class="stat-card">
             <div class="stat-label">Std Deviation</div>
             <div class="stat-value" id="statStdDev">
-              <span class="stat-placeholder">—</span>
+              <span class="stat-placeholder">â€”</span>
             </div>
             <div class="stat-sub">Final Score</div>
           </div>
           <div class="stat-card">
             <div class="stat-label">Mode</div>
             <div class="stat-value" id="statMode">
-              <span class="stat-placeholder">—</span>
+              <span class="stat-placeholder">â€”</span>
             </div>
             <div class="stat-sub">Final Score</div>
           </div>
@@ -868,61 +687,61 @@
 
         <div class="analysis-row">
           <div class="analysis-panel">
-            <h4>Descriptive Statistics — Final Score</h4>
+            <h4>Descriptive Statistics â€” Final Score</h4>
             <ul class="stat-list">
               <li>
                 <span class="key">Count (n)</span>
-                <span class="val" id="dCount">—</span>
+                <span class="val" id="dCount">â€”</span>
               </li>
               <li>
                 <span class="key">Min</span>
-                <span class="val" id="dMin">—</span>
+                <span class="val" id="dMin">â€”</span>
               </li>
               <li>
                 <span class="key">Max</span>
-                <span class="val" id="dMax">—</span>
+                <span class="val" id="dMax">â€”</span>
               </li>
               <li>
                 <span class="key">Range</span>
-                <span class="val" id="dRange">—</span>
+                <span class="val" id="dRange">â€”</span>
               </li>
               <li>
-                <span class="key">Variance (σ²)</span>
-                <span class="val" id="dVariance">—</span>
+                <span class="key">Variance (ÏƒÂ²)</span>
+                <span class="val" id="dVariance">â€”</span>
               </li>
               <li>
-                <span class="key">Std Dev (σ)</span>
-                <span class="val" id="dStdDev">—</span>
+                <span class="key">Std Dev (Ïƒ)</span>
+                <span class="val" id="dStdDev">â€”</span>
               </li>
             </ul>
           </div>
 
           <div class="analysis-panel">
-            <h4>Correlation &amp; Regression (Study Hours → Score)</h4>
+            <h4>Correlation &amp; Regression (Study Hours â†’ Score)</h4>
             <ul class="stat-list">
               <li>
                 <span class="key">Pearson r</span>
-                <span class="val" id="rPearson">—</span>
+                <span class="val" id="rPearson">â€”</span>
               </li>
               <li>
                 <span class="key">Interpretation</span>
-                <span class="val" id="rInterp">—</span>
+                <span class="val" id="rInterp">â€”</span>
               </li>
               <li>
                 <span class="key">Slope (m)</span>
-                <span class="val" id="rSlope">—</span>
+                <span class="val" id="rSlope">â€”</span>
               </li>
               <li>
                 <span class="key">Intercept (b)</span>
-                <span class="val" id="rIntercept">—</span>
+                <span class="val" id="rIntercept">â€”</span>
               </li>
               <li>
-                <span class="key">R² (fit quality)</span>
-                <span class="val" id="rSquared">—</span>
+                <span class="key">RÂ² (fit quality)</span>
+                <span class="val" id="rSquared">â€”</span>
               </li>
               <li>
                 <span class="key">Equation</span>
-                <span class="val" id="rEquation">—</span>
+                <span class="val" id="rEquation">â€”</span>
               </li>
             </ul>
           </div>
@@ -931,7 +750,7 @@
     </main>
 
     <footer>
-      DS COLLAB PROJECT · COMPUTER SCIENCE DEPT · GIT COLLABORATIVE ACTIVITY
+      DS COLLAB PROJECT Â· COMPUTER SCIENCE DEPT Â· GIT COLLABORATIVE ACTIVITY
       <br />Each student's contribution is tracked via commits, branches, and
       pull requests.
     </footer>
@@ -950,7 +769,7 @@
         }
 
         console.log(
-          "✅ onDataReady() fired. window.DS has",
+          "âœ… onDataReady() fired. window.DS has",
           window.DS.length,
           "rows.",
         );
@@ -991,10 +810,43 @@
         if (s >= 90) return "A";
         if (s >= 80) return "B";
         if (s >= 70) return "C";
-        return "D";
+        if (s >= 60) return "D";
+        return "F";
       }
 
-      function csvRowToStudent(row) {
+      function computeColumnStats(rows) {
+        function minMaxFor(key) {
+          const values = rows
+            .map(function (r) {
+              return num(r[key]);
+            })
+            .filter(Number.isFinite);
+          if (values.length === 0) return { min: 0, max: 0 };
+          return {
+            min: Math.min.apply(null, values),
+            max: Math.max.apply(null, values),
+          };
+        }
+
+        return {
+          daily: minMaxFor("daily_screen_time_hours"),
+          social: minMaxFor("social_media_hours"),
+          gaming: minMaxFor("gaming_hours"),
+          work: minMaxFor("work_study_hours"),
+          sleep: minMaxFor("sleep_hours"),
+          appOpens: minMaxFor("app_opens_per_day"),
+        };
+      }
+
+      function normalizeWithStats(value, stats) {
+        const minV = num(stats && stats.min);
+        const maxV = num(stats && stats.max);
+        const span = maxV - minV;
+        if (!Number.isFinite(span) || span <= 0) return 0.5;
+        return clamp((num(value) - minV) / span, 0, 1);
+      }
+
+      function csvRowToStudent(row, stats) {
         const daily = num(row.daily_screen_time_hours);
         const social = num(row.social_media_hours);
         const gaming = num(row.gaming_hours);
@@ -1003,38 +855,55 @@
         const addicted = num(row.addicted_label);
         const stress = String(row.stress_level || "");
         const stressPenalty =
-          stress === "High" ? 15 : stress === "Medium" ? 8 : 0;
+          stress === "High" ? 0.16 : stress === "Medium" ? 0.08 : 0;
         const academicImpactPenalty =
-          String(row.academic_work_impact || "") === "Yes" ? 8 : 0;
-        const sleepBalance = clamp(8 - Math.abs(sleepH - 7.5) * 2, 0, 8);
-        const attendance = clamp(100 - daily * 6, 0, 100);
+          String(row.academic_work_impact || "") === "Yes" ? 0.1 : 0;
+
+        const workN = normalizeWithStats(work, stats.work);
+        const dailyN = normalizeWithStats(daily, stats.daily);
+        const socialN = normalizeWithStats(social, stats.social);
+        const gamingN = normalizeWithStats(gaming, stats.gaming);
+        const sleepN = normalizeWithStats(sleepH, stats.sleep);
+        const sleepQualityN = 1 - Math.min(1, Math.abs(sleepN - 0.5) * 2);
+        const appOpensN = normalizeWithStats(
+          num(row.app_opens_per_day),
+          stats.appOpens,
+        );
+
+        const attendance = roundTo((1 - dailyN) * 100, 2);
         const midterm = clamp(
-          55 +
-            work * 7 +
-            sleepBalance * 2 -
-            social * 6 -
-            gaming * 4 -
-            stressPenalty -
-            academicImpactPenalty,
+          roundTo(
+            100 *
+              (0.4 * workN +
+                0.2 * sleepQualityN +
+                0.15 * (1 - socialN) +
+                0.15 * (1 - gamingN) +
+                0.1 * (1 - dailyN) -
+                0.5 * stressPenalty -
+                0.4 * academicImpactPenalty),
+            2,
+          ),
           0,
           100,
         );
         const score = clamp(
-          50 +
-            work * 8 +
-            sleepBalance * 2 -
-            daily * 4 -
-            addicted * 25 -
-            stressPenalty -
-            academicImpactPenalty,
+          roundTo(
+            100 *
+              (0.42 * workN +
+                0.2 * sleepQualityN +
+                0.18 * (1 - dailyN) +
+                0.08 * (1 - socialN) +
+                0.07 * (1 - gamingN) +
+                0.05 * appOpensN -
+                0.5 * stressPenalty -
+                0.4 * academicImpactPenalty -
+                0.12 * addicted),
+            2,
+          ),
           0,
           100,
         );
-        const assignments = clamp(
-          Math.round(num(row.app_opens_per_day) / 30),
-          0,
-          10,
-        );
+        const assignments = clamp(Math.round(appOpensN * 10), 0, 10);
         const userId = String(row.user_id || "").trim();
         const name = userId ? "Student " + userId : "";
         return {
@@ -1050,14 +919,22 @@
         };
       }
 
-      function gradeCellClass(grade) {
-        const c = String(grade || "").toUpperCase();
-        if (c === "A" || c === "B" || c === "C" || c === "D")
-          return "grade-" + c;
-        return "grade-D";
+      function buildStudentsFromRawRows(rawRows) {
+        const rows = Array.isArray(rawRows) ? rawRows : [];
+        const stats = computeColumnStats(rows);
+        return rows.map(function (row) {
+          return csvRowToStudent(row, stats);
+        });
       }
 
-      const GRADE_SORT_RANK = { A: 4, B: 3, C: 2, D: 1 };
+      function gradeCellClass(grade) {
+        const c = String(grade || "").toUpperCase();
+        if (c === "A" || c === "B" || c === "C" || c === "D" || c === "F")
+          return "grade-" + c;
+        return "grade-F";
+      }
+
+      const GRADE_SORT_RANK = { A: 5, B: 4, C: 3, D: 2, F: 1 };
 
       function sortValueForKey(row, sortKey) {
         if (sortKey === "grade")
@@ -1127,7 +1004,7 @@
           if (!res.ok) throw new Error("HTTP " + res.status);
           const text = await res.text();
           const rawRows = parseCsvToObjects(text);
-          window.DS = rawRows.map(csvRowToStudent);
+          window.DS = buildStudentsFromRawRows(rawRows);
           datasetTableShowAll = false;
           renderTable(window.DS);
           onDataReady();
@@ -1138,7 +1015,7 @@
           datasetTableShowAll = false;
           if (err && err.message === "file-protocol") {
             showTableStatusRow(
-              "Cannot load dataset.csv from a file:// URL. Open this folder with a local server (VS Code Live Server, or run: npx serve) and open the page at http://localhost:… so dataset.csv can load next to this HTML file.",
+              "Cannot load dataset.csv from a file:// URL. Open this folder with a local server (VS Code Live Server, or run: npx serve) and open the page at http://localhost:â€¦ so dataset.csv can load next to this HTML file.",
             );
           } else {
             showTableStatusRow(
@@ -1150,6 +1027,10 @@
         }
       }
 
+      /**
+       * Dynamically build and insert table rows into #tableBody.
+       * @param {Array} data - Array of student objects
+       */
       function renderTable(data) {
         const tbody = document.getElementById("tableBody");
         if (!tbody) return;
@@ -1351,6 +1232,10 @@
           });
       }
 
+      /**
+       * Student 2 scatter-chart helper only. Student 3 owns the general
+       * linearRegression() exercise later in this file.
+       */
       function student2LinearRegression(xs, ys) {
         const n = xs.length;
         if (n < 2) {
@@ -1558,7 +1443,7 @@
                   label: function (ctx) {
                     if (ctx.datasetIndex === 1) {
                       return (
-                        "Trend: y ≈ " +
+                        "Trend: y â‰ˆ " +
                         fit.m.toFixed(3) +
                         "x + " +
                         fit.b.toFixed(2)
@@ -1604,12 +1489,32 @@
         });
       }
 
+      /**
+       * STUDENT 2 â€” drawHistogram(canvasId, data)
+       *
+       * PURPOSE: Histogram â€” distribution of derived Final Scores in 10-point bins.
+       *          Bins: 40â€“49, 50â€“59, 60â€“69, 70â€“79, 80â€“89, 90â€“100
+       *
+       * @param {string} canvasId - 'histChart'
+       * @param {Array}  data     - window.DS array
+       *
+       * STEPS:
+       *  1. Define bins: [40,50,60,70,80,90,100]
+       *  2. Count how many students' scores fall in each bin
+       *  3. Render as a bar chart (type: 'bar') with no gap between bars
+       *     (use barPercentage: 1.0, categoryPercentage: 1.0)
+       *
+       * VISUAL REQUIREMENTS:
+       *  - Bars colored coral (#e05c6a) at 75% opacity
+       *  - X-axis labels: '40s', '50s', '60s', '70s', '80s', '90s+'
+       *  - Y-axis: Count (integer ticks)
+       */
       function drawHistogram(canvasId, data) {
         const rows = Array.isArray(data) ? data : [];
         const scores = rows.map(function (r) {
           return num(r.score);
         });
-        const binLabels = ["40s", "50s", "60s", "70s", "80s", "90s+"];
+        const binLabels = ["<50", "50s", "60s", "70s", "80s", "90s+"];
         const counts = [0, 0, 0, 0, 0, 0];
         scores.forEach(function (s) {
           if (s < 50) {
@@ -1692,8 +1597,8 @@
 
       function drawPieChart(canvasId, data) {
         const rows = Array.isArray(data) ? data : [];
-        const order = ["A", "B", "C", "D"];
-        const counts = { A: 0, B: 0, C: 0, D: 0 };
+        const order = ["A", "B", "C", "D", "F"];
+        const counts = { A: 0, B: 0, C: 0, D: 0, F: 0 };
         rows.forEach(function (r) {
           const g = String(r.grade || "").toUpperCase();
           if (counts[g] !== undefined) {
@@ -1707,7 +1612,8 @@
           A: "#56d364",
           B: "#f0b429",
           C: "#3ecfcf",
-          D: "#e05c6a",
+          D: "#e67e22",
+          F: "#e05c6a",
         };
         const bg = order.map(function (k) {
           return colors[k] + "bf";
@@ -1811,7 +1717,7 @@
 
       function mode(arr) {
         const values = numericValues(arr);
-        if (values.length === 0) return "—";
+        if (values.length === 0) return "â€”";
         const counts = new Map();
         values.forEach(function (value) {
           counts.set(value, (counts.get(value) || 0) + 1);
@@ -1832,12 +1738,12 @@
 
       function variance(arr) {
         const values = numericValues(arr);
-        if (values.length === 0) return 0;
+        if (values.length < 2) return 0;
         const avg = average(values);
         const totalSquaredDiff = values.reduce(function (sum, value) {
           return sum + Math.pow(value - avg, 2);
         }, 0);
-        return roundTo(totalSquaredDiff / values.length, 2);
+        return roundTo(totalSquaredDiff / (values.length - 1), 2);
       }
 
       function stdDev(arr) {
@@ -1959,7 +1865,9 @@
           }
 
           function fmt(value, places) {
-            return Number.isFinite(value) ? Number(value).toFixed(places) : "—";
+            return Number.isFinite(value)
+              ? Number(value).toFixed(places)
+              : "â€”";
           }
 
           function corrInterpretation(value) {
@@ -1976,15 +1884,15 @@
             Number.isFinite(fit.intercept) && fit.intercept < 0 ? " - " : " + ";
           const interceptText = Number.isFinite(fit.intercept)
             ? Math.abs(fit.intercept).toFixed(4)
-            : "—";
+            : "â€”";
           const equation =
             Number.isFinite(fit.slope) && Number.isFinite(fit.intercept)
               ? "score = " +
                 fit.slope.toFixed(4) +
-                "·hours" +
+                "Â·hours" +
                 interceptSign +
                 interceptText
-              : "—";
+              : "â€”";
 
           setStatText("statMean", fmt(scoreMean, 2));
           setStatText("statMedian", fmt(scoreMedian, 2));
