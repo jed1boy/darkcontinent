@@ -1,2180 +1,1921 @@
-<!DOCTYPE html>
+﻿<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DataSci Collab — Git Collaborative Project</title>
-
-  <!--
-  ╔══════════════════════════════════════════════════════════════════════════╗
-  ║          DATA SCIENCE COLLABORATIVE GIT PROJECT — INSTRUCTOR COPY       ║
-  ║                                                                          ║
-  ║  PURPOSE:  Practice real Git collaboration on a data science codebase.   ║
-  ║  GROUPS:   Maximum 3 students per group.                                 ║
-  ║                                                                          ║
-  ║  ┌─────────────────────────────────────────────────────────────────────┐ ║
-  ║  │  STUDENT 1 (REPO OWNER) ── Project setup + Dataset & Table Engine   │ ║
-  ║  │  STUDENT 2 (COLLABORATOR) ── Data Visualization (Charts)            │ ║
-  ║  │  STUDENT 3 (COLLABORATOR) ── Statistical Analysis Engine            │ ║
-  ║  └─────────────────────────────────────────────────────────────────────┘ ║
-  ║                                                                          ║
-  ║  SEARCH FOR "STUDENT X CONTRIBUTION" COMMENTS TO FIND EACH TASK BLOCK   ║
-  ╚══════════════════════════════════════════════════════════════════════════╝
-
-  GIT WORKFLOW FOR EACH GROUP:
-  ─────────────────────────────
-  1. Student 1 creates the GitHub repo and pushes this starter file.
-  2. Student 1 invites Students 2 & 3 as collaborators.
-  3. Each student creates their own branch (e.g., feature/visualization).
-  4. Students implement their assigned section (search for their TODO block).
-  5. Each student opens a Pull Request (PR) targeting main.
-  6. Another group member reviews and approves the PR before merging.
-  7. Resolve any merge conflicts as a team.
-
-  GRADING RUBRIC (per student):
-  ─────────────────────────────
-  ✔ At least 5 meaningful commits on their branch
-  ✔ A submitted and merged Pull Request with a description
-  ✔ Code review comment left on a teammate's PR
-  ✔ Functional implementation of their assigned section
-  ✔ No broken code merged into main
-  -->
-
-  <!-- Chart.js — only dependency, loaded from CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-
-  <!-- Google Fonts — Courier Prime for terminal feel, DM Sans for UI -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-
-  <style>
-    /* ──────────────────────────────────────────────
-       DESIGN TOKENS  (CSS custom properties)
-       Any student can update these for theming.
-    ────────────────────────────────────────────── */
-    :root {
-      --bg:         #0d0f14;        /* near-black background */
-      --surface:    #151820;        /* card / panel background */
-      --surface2:   #1c2030;        /* slightly lighter surface */
-      --border:     #2a2f45;        /* subtle border */
-      --accent:     #f0b429;        /* amber — primary accent */
-      --accent2:    #3ecfcf;        /* teal — secondary accent */
-      --accent3:    #e05c6a;        /* coral — danger / highlight */
-      --text:       #d4daf0;        /* primary text */
-      --text-dim:   #6b748f;        /* muted text */
-      --mono:       'Courier Prime', monospace;
-      --sans:       'DM Sans', sans-serif;
-      --radius:     6px;
-      --radius-lg:  12px;
-      --glow:       0 0 18px rgba(240,180,41,0.25);
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: var(--sans);
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 0 0 80px;
-      /* subtle scanline texture for terminal feel */
-      background-image: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(255,255,255,0.013) 2px,
-        rgba(255,255,255,0.013) 4px
-      );
-    }
-
-    /* ── HEADER ─────────────────────────────────── */
-    header {
-      background: var(--surface);
-      border-bottom: 2px solid var(--accent);
-      padding: 20px 40px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: var(--glow);
-    }
-
-    .header-left h1 {
-      font-family: var(--mono);
-      font-size: 1.3rem;
-      color: var(--accent);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-
-    .header-left p {
-      font-size: 0.78rem;
-      color: var(--text-dim);
-      margin-top: 2px;
-      font-family: var(--mono);
-    }
-
-    .git-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 8px 14px;
-      font-family: var(--mono);
-      font-size: 0.75rem;
-      color: var(--accent2);
-    }
-
-    .git-badge .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent2);
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0.3; }
-    }
-
-    /* ── MAIN LAYOUT ─────────────────────────────── */
-    main {
-      max-width: 1300px;
-      margin: 0 auto;
-      padding: 40px 30px;
-    }
-
-    /* ── CONTRIBUTION CARDS (instruction panels) ── */
-    .contrib-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 50px;
-    }
-
-    .contrib-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .contrib-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    }
-
-    .contrib-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-    }
-
-    .contrib-card.s1::before { background: var(--accent); }
-    .contrib-card.s2::before { background: var(--accent2); }
-    .contrib-card.s3::before { background: var(--accent3); }
-
-    .contrib-card .student-tag {
-      font-family: var(--mono);
-      font-size: 0.68rem;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    .s1 .student-tag { color: var(--accent); }
-    .s2 .student-tag { color: var(--accent2); }
-    .s3 .student-tag { color: var(--accent3); }
-
-    .contrib-card h3 {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-
-    .contrib-card ul {
-      list-style: none;
-      font-size: 0.8rem;
-      color: var(--text-dim);
-      line-height: 1.7;
-    }
-
-    .contrib-card ul li::before {
-      content: '→ ';
-      color: var(--text-dim);
-    }
-
-    .branch-tag {
-      display: inline-block;
-      margin-top: 12px;
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 3px 8px;
-      color: var(--text-dim);
-    }
-
-    /* ── SECTION WRAPPERS ────────────────────────── */
-    .section {
-      margin-bottom: 56px;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: baseline;
-      gap: 14px;
-      margin-bottom: 20px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .section-header h2 {
-      font-family: var(--mono);
-      font-size: 1.05rem;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-
-    .owner-tag {
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-weight: 700;
-    }
-
-    .tag-s1 { background: rgba(240,180,41,0.15);  color: var(--accent);  border: 1px solid rgba(240,180,41,0.3); }
-    .tag-s2 { background: rgba(62,207,207,0.15);  color: var(--accent2); border: 1px solid rgba(62,207,207,0.3); }
-    .tag-s3 { background: rgba(224,92,106,0.15);  color: var(--accent3); border: 1px solid rgba(224,92,106,0.3); }
-
-    /* ── PANEL / CARD ────────────────────────────── */
-    .panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-    }
-
-    .dataset-collapse {
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      background: var(--surface);
-      overflow: hidden;
-    }
-
-    .dataset-collapse > summary {
-      list-style: none;
-      cursor: pointer;
-      padding: 16px 20px;
-      font-family: var(--mono);
-      font-size: 0.82rem;
-      color: var(--accent);
-      user-select: none;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      border-bottom: 1px solid transparent;
-    }
-
-    .dataset-collapse > summary::-webkit-details-marker { display: none; }
-
-    .dataset-collapse[open] > summary {
-      border-bottom-color: var(--border);
-    }
-
-    .dataset-collapse__chev {
-      color: var(--text-dim);
-      font-size: 0.7rem;
-      transition: transform 0.2s ease;
-    }
-
-    .dataset-collapse[open] .dataset-collapse__chev {
-      transform: rotate(90deg);
-    }
-
-    .dataset-collapse .panel {
-      border: none;
-      border-radius: 0;
-    }
-
-    /* ── TABLE STYLES ────────────────────────────── */
-    .table-wrap {
-      overflow-x: auto;
-      border-radius: var(--radius);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.82rem;
-      font-family: var(--mono);
-    }
-
-    thead th {
-      background: var(--surface2);
-      color: var(--accent);
-      text-align: left;
-      padding: 10px 14px;
-      font-size: 0.72rem;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      border-bottom: 2px solid var(--border);
-      white-space: nowrap;
-    }
-
-    tbody tr {
-      border-bottom: 1px solid var(--border);
-      transition: background 0.15s;
-    }
-
-    tbody tr:hover { background: var(--surface2); }
-
-    tbody td {
-      padding: 9px 14px;
-      color: var(--text);
-    }
-
-    tbody td.numeric { color: var(--accent2); }
-    tbody td.grade-A { color: #56d364; }
-    tbody td.grade-B { color: var(--accent); }
-    tbody td.grade-C { color: var(--accent3); }
-    tbody td.grade-D { color: #e05c6a; }
-
-    /* ── TOOLBAR ─────────────────────────────────── */
-    .toolbar {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 18px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    input[type="text"], select {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 0.8rem;
-      padding: 8px 12px;
-      border-radius: var(--radius);
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    input[type="text"]:focus, select:focus {
-      border-color: var(--accent);
-    }
-
-    input[type="text"] { width: 220px; }
-
-    button {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 0.78rem;
-      padding: 8px 14px;
-      border-radius: var(--radius);
-      cursor: pointer;
-      letter-spacing: 0.5px;
-      transition: all 0.2s;
-    }
-
-    button:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    button.primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #000;
-      font-weight: 700;
-    }
-
-    button.primary:hover {
-      background: #ffc946;
-    }
-
-    .count-badge {
-      font-family: var(--mono);
-      font-size: 0.72rem;
-      color: var(--text-dim);
-      margin-left: auto;
-    }
-
-    /* ── CHART GRID ──────────────────────────────── */
-    .chart-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 24px;
-    }
-
-    .chart-box {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      min-height: 380px;
-    }
-
-    .chart-box h4 {
-      font-family: var(--mono);
-      font-size: 0.75rem;
-      color: var(--text-dim);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin-bottom: 16px;
-    }
-
-    .chart-box canvas { max-height: 320px; width: 100%; }
-
-    .chart-placeholder {
-      height: 280px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 10px;
-      color: var(--text-dim);
-      font-family: var(--mono);
-      font-size: 0.78rem;
-      border: 2px dashed var(--border);
-      border-radius: var(--radius);
-    }
-
-    .chart-placeholder span { font-size: 2rem; }
-
-    /* ── STATS GRID ──────────────────────────────── */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-bottom: 24px;
-    }
-
-    .stat-card {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 16px;
-      text-align: center;
-    }
-
-    .stat-card .stat-label {
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      color: var(--text-dim);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    .stat-card .stat-value {
-      font-family: var(--mono);
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--accent3);
-    }
-
-    .stat-card .stat-sub {
-      font-size: 0.7rem;
-      color: var(--text-dim);
-      margin-top: 4px;
-    }
-
-    .stat-placeholder {
-      font-family: var(--mono);
-      font-size: 1.2rem;
-      color: var(--border);
-    }
-
-    /* ── ANALYSIS TABLE ──────────────────────────── */
-    .analysis-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-
-    .analysis-panel {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 18px;
-    }
-
-    .analysis-panel h4 {
-      font-family: var(--mono);
-      font-size: 0.72rem;
-      color: var(--text-dim);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin-bottom: 14px;
-    }
-
-    .stat-list {
-      list-style: none;
-      font-family: var(--mono);
-      font-size: 0.82rem;
-    }
-
-    .stat-list li {
-      display: flex;
-      justify-content: space-between;
-      padding: 7px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .stat-list li:last-child { border-bottom: none; }
-
-    .stat-list .key { color: var(--text-dim); }
-    .stat-list .val { color: var(--accent2); }
-
-    /* ── TODO CALLOUT ────────────────────────────── */
-    .todo-callout {
-      background: rgba(240,180,41,0.08);
-      border: 1px solid rgba(240,180,41,0.25);
-      border-left: 4px solid var(--accent);
-      border-radius: var(--radius);
-      padding: 14px 18px;
-      font-family: var(--mono);
-      font-size: 0.78rem;
-      color: var(--accent);
-      margin-bottom: 20px;
-      line-height: 1.7;
-    }
-
-    .todo-callout strong { display: block; margin-bottom: 4px; font-size: 0.72rem; letter-spacing: 1px; }
-
-    /* ── FOOTER ──────────────────────────────────── */
-    footer {
-      text-align: center;
-      margin-top: 60px;
-      font-family: var(--mono);
-      font-size: 0.72rem;
-      color: var(--text-dim);
-      letter-spacing: 1px;
-    }
-
-    /* ── RESPONSIVE ──────────────────────────────── */
-    @media (max-width: 900px) {
-      .contrib-grid    { grid-template-columns: 1fr; }
-      .chart-grid      { grid-template-columns: 1fr; }
-      .stats-grid      { grid-template-columns: repeat(2,1fr); }
-      .analysis-row    { grid-template-columns: 1fr; }
-    }
-  </style>
-</head>
-<body>
-
-<!-- ═══════════════════════════════════════════════════════
-     HEADER
-═══════════════════════════════════════════════════════ -->
-<header>
-  <div class="header-left">
-    <h1>DataSci Collab Dashboard</h1>
-    <p>Student Performance Dataset · Git Collaborative Activity</p>
-  </div>
-  <div class="git-badge">
-    <span class="dot"></span>
-    branch: <strong id="currentBranch">main</strong>
-  </div>
-</header>
-
-<main>
-
-  <!-- ═══════════════════════════════════════════════════
-       CONTRIBUTION OVERVIEW CARDS
-  ═══════════════════════════════════════════════════ -->
-  <div class="contrib-grid">
-
-    <!-- Student 1 -->
-    <div class="contrib-card s1">
-      <div class="student-tag">Student 1 · Repo Owner</div>
-      <h3>Dataset Engine &amp; Project Setup</h3>
-      <ul>
-        <li>Initialize the GitHub repository</li>
-        <li>Implement <code>loadDataset()</code></li>
-        <li>Implement <code>renderTable()</code></li>
-        <li>Implement filter &amp; sort logic</li>
-        <li>Invite collaborators &amp; protect main</li>
-      </ul>
-      <span class="branch-tag">branch: main (setup) → feature/data-engine</span>
-    </div>
-
-    <!-- Student 2 -->
-    <div class="contrib-card s2">
-      <div class="student-tag">Student 2 · Collaborator</div>
-      <h3>Data Visualization Layer</h3>
-      <ul>
-        <li>Implement <code>drawBarChart()</code></li>
-        <li>Implement <code>drawScatterPlot()</code></li>
-        <li>Implement <code>drawHistogram()</code></li>
-        <li>Implement <code>drawPieChart()</code></li>
-        <li>Open and get PR merged into main</li>
-      </ul>
-      <span class="branch-tag">branch: feature/visualization</span>
-    </div>
-
-    <!-- Student 3 -->
-    <div class="contrib-card s3">
-      <div class="student-tag">Student 3 · Collaborator</div>
-      <h3>Statistical Analysis Engine</h3>
-      <ul>
-        <li>Implement <code>mean()</code>, <code>median()</code>, <code>mode()</code></li>
-        <li>Implement <code>stdDev()</code>, <code>variance()</code></li>
-        <li>Implement <code>pearsonCorr()</code></li>
-        <li>Implement <code>linearRegression()</code></li>
-        <li>Open and get PR merged into main</li>
-      </ul>
-      <span class="branch-tag">branch: feature/statistics</span>
-    </div>
-
-  </div><!-- /contrib-grid -->
-
-
-  <!-- ═══════════════════════════════════════════════════
-       SECTION 1 — DATASET & TABLE  (STUDENT 1)
-  ═══════════════════════════════════════════════════ -->
-  <section class="section" id="sec-data">
-    <div class="section-header">
-      <h2>01 · Dataset Explorer</h2>
-      <span class="owner-tag tag-s1">Student 1 · Repo Owner</span>
-    </div>
-
-    <!--
-    ┌─────────────────────────────────────────────────────────────────┐
-    │  STUDENT 1 CONTRIBUTION — Dataset Engine                        │
-    │  Branch: feature/data-engine                                    │
-    │                                                                 │
-    │  YOUR TASKS:                                                    │
-    │  1. Complete loadDataset() — the sample data is provided        │
-    │     in RAW_DATA below. Parse it and store in window.DS          │
-    │  2. Complete renderTable(data) — build the HTML table           │
-    │     dynamically from the data array                             │
-    │  3. Wire up the filter input and sort dropdown                  │
-    │  4. Call loadDataset() on DOMContentLoaded                      │
-    │                                                                 │
-    │  COMMITS EXPECTED:                                              │
-    │  • "feat: add raw dataset and loadDataset function"             │
-    │  • "feat: implement renderTable with dynamic columns"           │
-    │  • "feat: add filter by name and sort by column"                │
-    │  • "fix: handle edge cases in table rendering"                  │
-    │  • "chore: invite collaborators and set branch protection"      │
-    └─────────────────────────────────────────────────────────────────┘
-    -->
-
-    <div class="todo-callout">
-      <strong>✓ Complete — Student 1</strong>
-      <code>loadDataset()</code> loads <code>dataset.csv</code> into <code>window.DS</code>, <code>renderTable(data)</code> builds the table,
-      and the filter/sort toolbar is wired. Open this folder with a local server (not <code>file://</code>) so the CSV can load.
-    </div>
-
-    <details class="dataset-collapse" id="datasetExplorerCollapse" open>
-      <summary>
-        <span>Data table <span style="color:var(--text-dim); font-size:0.75rem; font-weight:400;">(click to show or hide)</span></span>
-        <span class="dataset-collapse__chev" aria-hidden="true">▶</span>
-      </summary>
-    <div class="panel">
-      <div class="toolbar">
-        <input type="text" id="filterInput" placeholder="Filter by user ID (e.g. U00001) or label…" />
-        <select id="sortSelect">
-          <option value="">Sort by...</option>
-          <option value="name">Name</option>
-          <option value="studyHours">Study Hours</option>
-          <option value="score">Derived Final Score</option>
-          <option value="grade">Grade</option>
-          <option value="attendance">Derived Attendance %</option>
-        </select>
-        <button type="button" onclick="applyFilterSort()">Apply</button>
-        <button type="button" onclick="resetTable()">Reset</button>
-        <span class="count-badge" id="rowCount">— rows</span>
-        <button type="button" id="btnToggleRowPreview" hidden onclick="toggleDatasetRowPreview()">Show all rows</button>
-      </div>
-
-      <div class="table-wrap">
-        <table id="dataTable">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>User / label</th>
-              <th>Study Hours/Week</th>
-              <th>Derived Attendance %</th>
-              <th>Academic Focus Index</th>
-              <th>Derived Final Score</th>
-              <th>Assignments Done</th>
-              <th>Sleep Hrs/Night</th>
-              <th>Addicted</th>
-              <th>Grade</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-      </div>
-    </div><!-- /panel -->
-    </details>
-  </section>
-
-
-  <!-- ═══════════════════════════════════════════════════
-       SECTION 2 — VISUALIZATIONS  (STUDENT 2)
-  ═══════════════════════════════════════════════════ -->
-  <section class="section" id="sec-viz">
-    <div class="section-header">
-      <h2>02 · Visualizations</h2>
-      <span class="owner-tag tag-s2">Student 2 · Collaborator</span>
-    </div>
-
-    <!--
-    ┌─────────────────────────────────────────────────────────────────┐
-    │  STUDENT 2 CONTRIBUTION — Data Visualization Layer              │
-    │  Branch: feature/visualization                                  │
-    │                                                                 │
-    │  YOUR TASKS:                                                    │
-    │  1. drawBarChart(canvasId, data)  — Study Hours vs derived score│
-    │  2. drawScatterPlot(canvasId, data) — Derived attendance/score  │
-    │  3. drawHistogram(canvasId, data) — Derived score distribution  │
-    │  4. drawPieChart(canvasId, data)  — Derived grades A/B/C/D      │
-    │                                                                 │
-    │  HOW TO ACCESS DATA:                                            │
-    │  - window.DS holds the full dataset array (set by Student 1)   │
-    │  - Each row has: name, studyHours, attendance, midterm,         │
-    │                  score, assignments, sleep, addicted, grade     │
-    │                                                                 │
-    │  CHART.JS IS ALREADY LOADED — use Chart object directly         │
-    │                                                                 │
-    │  COMMITS EXPECTED:                                              │
-    │  • "feat: implement drawBarChart for study hours vs score"      │
-    │  • "feat: implement drawScatterPlot attendance vs score"        │
-    │  • "feat: implement drawHistogram for score distribution"       │
-    │  • "feat: implement drawPieChart for grade breakdown"           │
-    │  • "fix: add chart destroy to prevent canvas reuse errors"      │
-    └─────────────────────────────────────────────────────────────────┘
-    -->
-
-    <div class="todo-callout" style="border-left-color: var(--accent2); color: var(--accent2); background: rgba(62,207,207,0.06); border-color: rgba(62,207,207,0.25);">
-      <strong>✓ Complete — Student 2</strong>
-      <code>initCharts()</code> runs from <code>onDataReady()</code> when <code>window.DS</code> has rows.
-      <code>drawBarChart</code> (study-hour bins vs mean derived score), <code>drawScatterPlot</code> (derived attendance vs derived score),
-      <code>drawHistogram</code> (derived score bands), <code>drawPieChart</code> (derived grades A–D), with <code>window.CHARTS</code> teardown in <code>initCharts()</code>.
-    </div>
-
-    <div class="chart-grid">
-
-      <!-- Bar Chart -->
-      <div class="chart-box">
-        <h4>Study Hours vs Derived Score</h4>
-        <div class="chart-placeholder" id="barPlaceholder">
-          <span>📊</span>
-          Chart appears when the CSV data is ready.
-        </div>
-        <canvas id="barChart" style="display:none;"></canvas>
-      </div>
-
-      <!-- Scatter Plot -->
-      <div class="chart-box">
-        <h4>Derived Attendance % vs Derived Score</h4>
-        <div class="chart-placeholder" id="scatterPlaceholder">
-          <span>🔵</span>
-          Chart appears when the CSV data is ready.
-        </div>
-        <canvas id="scatterChart" style="display:none;"></canvas>
-      </div>
-
-      <!-- Histogram -->
-      <div class="chart-box">
-        <h4>Derived Score Distribution</h4>
-        <div class="chart-placeholder" id="histPlaceholder">
-          <span>📈</span>
-          Chart appears when the CSV data is ready.
-        </div>
-        <canvas id="histChart" style="display:none;"></canvas>
-      </div>
-
-      <!-- Pie Chart -->
-      <div class="chart-box">
-        <h4>Derived Grade Distribution</h4>
-        <div class="chart-placeholder" id="piePlaceholder">
-          <span>🍕</span>
-          Chart appears when the CSV data is ready.
-        </div>
-        <canvas id="pieChart" style="display:none;"></canvas>
-      </div>
-
-    </div><!-- /chart-grid -->
-  </section>
-
-
-  <!-- ═══════════════════════════════════════════════════
-       SECTION 3 — STATISTICS  (STUDENT 3)
-  ═══════════════════════════════════════════════════ -->
-  <section class="section" id="sec-stats">
-    <div class="section-header">
-      <h2>03 · Statistical Analysis</h2>
-      <span class="owner-tag tag-s3">Student 3 · Collaborator</span>
-    </div>
-
-    <!--
-    ┌─────────────────────────────────────────────────────────────────┐
-    │  STUDENT 3 CONTRIBUTION — Statistical Analysis Engine           │
-    │  Branch: feature/statistics                                     │
-    │                                                                 │
-    │  YOUR TASKS:                                                    │
-    │  1. mean(arr)         → arithmetic average                      │
-    │  2. median(arr)       → middle value of sorted array            │
-    │  3. mode(arr)         → most frequently occurring value         │
-    │  4. variance(arr)     → population variance                     │
-    │  5. stdDev(arr)       → square root of variance                 │
-    │  6. pearsonCorr(x,y)  → Pearson correlation coefficient r       │
-    │  7. linearRegression(x,y) → { slope, intercept, rSquared }     │
-    │  8. Call renderStats(window.DS) inside onDataReady()            │
-    │                                                                 │
-    │  All functions accept plain JS arrays of numbers.              │
-    │                                                                 │
-    │  COMMITS EXPECTED:                                              │
-    │  • "feat: implement mean, median, mode functions"               │
-    │  • "feat: implement variance and standard deviation"            │
-    │  • "feat: implement Pearson correlation coefficient"            │
-    │  • "feat: implement linear regression with R-squared"           │
-    │  • "feat: wire renderStats to display results in the DOM"       │
-    └─────────────────────────────────────────────────────────────────┘
-    -->
-
-    <div class="todo-callout" style="border-left-color: var(--accent3); color: var(--accent3); background: rgba(224,92,106,0.06); border-color: rgba(224,92,106,0.25);">
-      <strong>✓ Complete — Student 3</strong>
-      The statistical functions below compute descriptive statistics, correlation,
-      and linear regression, then <code>renderStats(window.DS)</code> fills this section
-      when the dataset is ready.
-    </div>
-
-    <!-- Summary stat cards -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Mean Score</div>
-        <div class="stat-value" id="statMean"><span class="stat-placeholder">—</span></div>
-        <div class="stat-sub">Final Score</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Median Score</div>
-        <div class="stat-value" id="statMedian"><span class="stat-placeholder">—</span></div>
-        <div class="stat-sub">Final Score</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Std Deviation</div>
-        <div class="stat-value" id="statStdDev"><span class="stat-placeholder">—</span></div>
-        <div class="stat-sub">Final Score</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Mode</div>
-        <div class="stat-value" id="statMode"><span class="stat-placeholder">—</span></div>
-        <div class="stat-sub">Final Score</div>
-      </div>
-    </div>
-
-    <!-- Detailed analysis panels -->
-    <div class="analysis-row">
-
-      <!-- Descriptive stats table -->
-      <div class="analysis-panel">
-        <h4>Descriptive Statistics — Final Score</h4>
-        <ul class="stat-list">
-          <li><span class="key">Count (n)</span>        <span class="val" id="dCount">—</span></li>
-          <li><span class="key">Min</span>              <span class="val" id="dMin">—</span></li>
-          <li><span class="key">Max</span>              <span class="val" id="dMax">—</span></li>
-          <li><span class="key">Range</span>            <span class="val" id="dRange">—</span></li>
-          <li><span class="key">Variance (σ²)</span>   <span class="val" id="dVariance">—</span></li>
-          <li><span class="key">Std Dev (σ)</span>      <span class="val" id="dStdDev">—</span></li>
-        </ul>
-      </div>
-
-      <!-- Correlation & regression -->
-      <div class="analysis-panel">
-        <h4>Correlation &amp; Regression (Study Hours → Score)</h4>
-        <ul class="stat-list">
-          <li><span class="key">Pearson r</span>        <span class="val" id="rPearson">—</span></li>
-          <li><span class="key">Interpretation</span>   <span class="val" id="rInterp">—</span></li>
-          <li><span class="key">Slope (m)</span>        <span class="val" id="rSlope">—</span></li>
-          <li><span class="key">Intercept (b)</span>    <span class="val" id="rIntercept">—</span></li>
-          <li><span class="key">R² (fit quality)</span> <span class="val" id="rSquared">—</span></li>
-          <li><span class="key">Equation</span>         <span class="val" id="rEquation">—</span></li>
-        </ul>
-      </div>
-
-    </div><!-- /analysis-row -->
-  </section>
-
-</main>
-
-<footer>
-  DS COLLAB PROJECT · COMPUTER SCIENCE DEPT · GIT COLLABORATIVE ACTIVITY
-  <br>Each student's contribution is tracked via commits, branches, and pull requests.
-</footer>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════
-     JAVASCRIPT — Three clearly separated contribution zones
-═══════════════════════════════════════════════════════════════════ -->
-<script>
-"use strict";
-
-/* ─────────────────────────────────────────────────────────────────
-   SHARED DATASET — loaded from dataset.csv by Student 1 (loadDataset).
-   Same folder as this HTML; use a local HTTP server (Live Server, npx serve, etc.)
-   so fetch can read dataset.csv. file:// URLs block fetch.
-   Row shape: { name, studyHours, attendance, midterm, score,
-                assignments, sleep, addicted, grade }
-   Several app fields are derived classroom-friendly indices because the CSV
-   tracks screen use/addiction, not real grades or attendance records.
-────────────────────────────────────────────────────────────────── */
-
-/* Global dataset — Student 1 sets this; Students 2 & 3 read from it */
-window.DS = [];
-
-/* Chart instances registry — Student 2 uses this to destroy old charts */
-window.CHARTS = {};
-
-/* Called automatically when the dataset is ready (Student 1 triggers this) */
-function onDataReady() {
-  if (Array.isArray(window.DS) && window.DS.length > 0) {
-    renderStats(window.DS);
-    initCharts();
-  }
-
-  console.log("✅ onDataReady() fired. window.DS has", window.DS.length, "rows.");
-}
-
-
-/* ═══════════════════════════════════════════════════════════════════
-   ███████╗████████╗██╗   ██╗██████╗ ███████╗███╗   ██╗████████╗
-   ██╔════╝╚══██╔══╝██║   ██║██╔══██╗██╔════╝████╗  ██║╚══██╔══╝
-   ███████╗   ██║   ██║   ██║██║  ██║█████╗  ██╔██╗ ██║   ██║
-   ╚════██║   ██║   ██║   ██║██║  ██║██╔══╝  ██║╚██╗██║   ██║
-   ███████║   ██║   ╚██████╔╝██████╔╝███████╗██║ ╚████║   ██║
-   ╚══════╝   ╚═╝    ╚═════╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝
-
-   STUDENT 1 — DATASET ENGINE & TABLE (branch: feature/data-engine)
-═══════════════════════════════════════════════════════════════════ */
-
-const TABLE_PREVIEW_LIMIT = 50;
-let lastTableRows = [];
-let datasetTableShowAll = false;
-
-function clamp(n, lo, hi) {
-  return Math.min(hi, Math.max(lo, n));
-}
-
-function num(v) {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : 0;
-}
-
-/** Parse simple CSV (comma-separated, no embedded commas in fields for this dataset). */
-function parseCsvToObjects(text) {
-  const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "");
-  if (lines.length < 2) return [];
-  const headers = lines[0].split(",").map((h) => h.trim());
-  const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    const parts = lines[i].split(",");
-    if (parts.length < headers.length) continue;
-    const obj = {};
-    for (let j = 0; j < headers.length; j++) {
-      obj[headers[j]] = parts[j] !== undefined ? String(parts[j]).trim() : "";
-    }
-    rows.push(obj);
-  }
-  return rows;
-}
-
-function scoreToGrade(s) {
-  if (s >= 90) return "A";
-  if (s >= 80) return "B";
-  if (s >= 70) return "C";
-  return "D";
-}
-
-/**
- * Map one dataset.csv row into the app student shape.
- *
- * CSV-backed fields:
- * - name: user_id shown as "Student Uxxxxx"
- * - studyHours: work_study_hours
- * - sleep: sleep_hours
- * - addicted: addicted_label
- *
- * Derived classroom indices (0-100 unless noted):
- * - attendance: engagement proxy from lower daily screen time
- * - midterm: academic focus index from work, social, gaming, stress, and academic impact
- * - score: composite outcome index from work, sleep, screen time, stress, and addiction
- * - assignments: completion proxy from app opens per day (0-10)
- * - grade: A-D letter from the derived score, not addiction_level
- */
-function csvRowToStudent(row) {
-  const daily = num(row.daily_screen_time_hours);
-  const social = num(row.social_media_hours);
-  const gaming = num(row.gaming_hours);
-  const work = num(row.work_study_hours);
-  const sleepH = num(row.sleep_hours);
-  const addicted = num(row.addicted_label);
-  const stress = String(row.stress_level || "");
-  const stressPenalty = stress === "High" ? 15 : stress === "Medium" ? 8 : 0;
-  const academicImpactPenalty = String(row.academic_work_impact || "") === "Yes" ? 8 : 0;
-  const sleepBalance = clamp(8 - Math.abs(sleepH - 7.5) * 2, 0, 8);
-  const attendance = clamp(100 - daily * 6, 0, 100);
-  const midterm = clamp(
-    55 + work * 7 + sleepBalance * 2 - social * 6 - gaming * 4 - stressPenalty - academicImpactPenalty,
-    0,
-    100
-  );
-  const score = clamp(
-    50 + work * 8 + sleepBalance * 2 - daily * 4 - addicted * 25 - stressPenalty - academicImpactPenalty,
-    0,
-    100
-  );
-  const assignments = clamp(Math.round(num(row.app_opens_per_day) / 30), 0, 10);
-  const userId = String(row.user_id || "").trim();
-  const name = userId ? "Student " + userId : "";
-  return {
-    name,
-    studyHours: work,
-    attendance,
-    midterm,
-    score,
-    assignments,
-    sleep: sleepH,
-    addicted: addicted === 1,
-    grade: scoreToGrade(score),
-  };
-}
-
-function gradeCellClass(grade) {
-  const c = String(grade || "").toUpperCase();
-  if (c === "A" || c === "B" || c === "C" || c === "D") return "grade-" + c;
-  return "grade-D";
-}
-
-const GRADE_SORT_RANK = { A: 4, B: 3, C: 2, D: 1 };
-
-function sortValueForKey(row, sortKey) {
-  if (sortKey === "grade") return GRADE_SORT_RANK[String(row.grade).toUpperCase()] ?? -Infinity;
-  const n = Number(row[sortKey]);
-  return Number.isFinite(n) ? n : -Infinity;
-}
-
-function showTableStatusRow(message) {
-  lastTableRows = [];
-  const btn = document.getElementById("btnToggleRowPreview");
-  if (btn) btn.hidden = true;
-  const tbody = document.getElementById("tableBody");
-  if (!tbody) return;
-  tbody.replaceChildren();
-  const tr = document.createElement("tr");
-  const td = document.createElement("td");
-  td.colSpan = 10;
-  td.textContent = message;
-  td.style.textAlign = "center";
-  td.style.color = "var(--text-dim)";
-  td.style.fontFamily = "var(--mono)";
-  td.style.padding = "40px";
-  tr.appendChild(td);
-  tbody.appendChild(tr);
-}
-
-function updateRowCountAndPreviewControls() {
-  const rowCountEl = document.getElementById("rowCount");
-  const btn = document.getElementById("btnToggleRowPreview");
-  const total = lastTableRows.length;
-  if (rowCountEl) {
-    if (total === 0) {
-      rowCountEl.textContent = "0 rows";
-    } else if (total <= TABLE_PREVIEW_LIMIT || datasetTableShowAll) {
-      rowCountEl.textContent = total + " rows";
-    } else {
-      rowCountEl.textContent = TABLE_PREVIEW_LIMIT + " of " + total + " shown";
-    }
-  }
-  if (btn) {
-    if (total <= TABLE_PREVIEW_LIMIT) {
-      btn.hidden = true;
-    } else {
-      btn.hidden = false;
-      btn.textContent = datasetTableShowAll
-        ? "Show first " + TABLE_PREVIEW_LIMIT + " only"
-        : "Show all rows (" + total + ")";
-    }
-  }
-}
-
-function toggleDatasetRowPreview() {
-  datasetTableShowAll = !datasetTableShowAll;
-  renderTable(lastTableRows);
-}
-
-/**
- * Load dataset.csv into window.DS and trigger the rest of the app.
- * Use a local HTTP server (not file://) so fetch can read dataset.csv.
- */
-async function loadDataset() {
-  const rowCountEl = document.getElementById("rowCount");
-  const csvUrl = new URL("dataset.csv", window.location.href).href;
-  try {
-    if (window.location.protocol === "file:") {
-      throw new Error("file-protocol");
-    }
-    const res = await fetch(csvUrl);
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const text = await res.text();
-    const rawRows = parseCsvToObjects(text);
-    window.DS = rawRows.map(csvRowToStudent);
-    datasetTableShowAll = false;
-    renderTable(window.DS);
-    onDataReady();
-  } catch (err) {
-    console.error(err);
-    window.DS = [];
-    if (rowCountEl) rowCountEl.textContent = "0 rows";
-    datasetTableShowAll = false;
-    if (err && err.message === "file-protocol") {
-      showTableStatusRow(
-        "Cannot load dataset.csv from a file:// URL. Open this folder with a local server (VS Code Live Server, or run: npx serve) and open the page at http://localhost:… so dataset.csv can load next to this HTML file."
-      );
-    } else {
-      showTableStatusRow(
-        "Could not load dataset.csv. Check that it sits in the same folder as this HTML file and you are using http://localhost (not file://). URL tried: " + csvUrl
-      );
-    }
-    onDataReady();
-  }
-}
-
-/**
- * Dynamically build and insert table rows into #tableBody.
- * @param {Array} data - Array of student objects
- */
-function renderTable(data) {
-  const tbody = document.getElementById("tableBody");
-  if (!tbody) return;
-  tbody.replaceChildren();
-  lastTableRows = Array.isArray(data) ? data.slice() : [];
-  if (lastTableRows.length === 0) {
-    const tr = document.createElement("tr");
-    const td = document.createElement("td");
-    td.colSpan = 10;
-    td.textContent = "No results found";
-    td.style.textAlign = "center";
-    td.style.color = "var(--text-dim)";
-    td.style.fontFamily = "var(--mono)";
-    td.style.padding = "40px";
-    tr.appendChild(td);
-    tbody.appendChild(tr);
-    updateRowCountAndPreviewControls();
-    return;
-  }
-  const overLimit = lastTableRows.length > TABLE_PREVIEW_LIMIT;
-  const displayList =
-    overLimit && !datasetTableShowAll
-      ? lastTableRows.slice(0, TABLE_PREVIEW_LIMIT)
-      : lastTableRows;
-  const frag = document.createDocumentFragment();
-  displayList.forEach((row, i) => {
-    const tr = document.createElement("tr");
-    const addicted = Boolean(row.addicted);
-    const cells = [
-      { text: String(i + 1), numeric: false, grade: false },
-      { text: String(row.name ?? ""), numeric: false, grade: false },
-      { text: String(row.studyHours), numeric: true, grade: false },
-      { text: String(row.attendance), numeric: true, grade: false },
-      { text: String(row.midterm), numeric: true, grade: false },
-      { text: String(row.score), numeric: true, grade: false },
-      { text: String(row.assignments), numeric: true, grade: false },
-      { text: String(row.sleep), numeric: true, grade: false },
-      { text: addicted ? "Yes" : "No", numeric: false, grade: false },
-      { text: String(row.grade ?? ""), numeric: false, grade: true },
-    ];
-    cells.forEach((c) => {
-      const td = document.createElement("td");
-      td.textContent = c.text;
-      if (c.numeric) td.classList.add("numeric");
-      if (c.grade) td.classList.add(gradeCellClass(row.grade));
-      tr.appendChild(td);
-    });
-    frag.appendChild(tr);
-  });
-  tbody.appendChild(frag);
-  updateRowCountAndPreviewControls();
-}
-
-/**
- * Filter by name and sort by selected column, then re-render.
- * 'name' → ascending; studyHours, score, grade, attendance → numeric descending.
- */
-function applyFilterSort() {
-  const input = document.getElementById("filterInput");
-  const select = document.getElementById("sortSelect");
-  const q = (input && input.value ? input.value : "").trim().toLowerCase();
-  const sortKey = select && select.value ? select.value : "";
-  let rows = Array.isArray(window.DS) ? [...window.DS] : [];
-  if (q) {
-    rows = rows.filter((r) => String(r.name).toLowerCase().includes(q));
-  }
-  if (sortKey) {
-    rows.sort((a, b) => {
-      if (sortKey === "name") {
-        return String(a.name).localeCompare(String(b.name), undefined, { sensitivity: "base" });
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DataSci Collab â€” Git Collaborative Project</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --bg: #0d0f14;
+        --surface: #151820;
+        --surface2: #1c2030;
+        --border: #2a2f45;
+        --accent: #f0b429;
+        --accent2: #3ecfcf;
+        --accent3: #e05c6a;
+        --text: #d4daf0;
+        --text-dim: #6b748f;
+        --mono: "Courier Prime", monospace;
+        --sans: "DM Sans", sans-serif;
+        --radius: 6px;
+        --radius-lg: 12px;
+        --glow: 0 0 18px rgba(240, 180, 41, 0.25);
       }
-      return sortValueForKey(b, sortKey) - sortValueForKey(a, sortKey);
-    });
-  }
-  datasetTableShowAll = false;
-  renderTable(rows);
-}
 
-function resetTable() {
-  const input = document.getElementById("filterInput");
-  const select = document.getElementById("sortSelect");
-  if (input) input.value = "";
-  if (select) select.value = "";
-  datasetTableShowAll = false;
-  renderTable(window.DS);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  loadDataset().catch((err) => console.error(err));
-});
-
-
-/* ═══════════════════════════════════════════════════════════════════
-   ██╗   ██╗██╗███████╗██╗   ██╗ █████╗ ██╗     ██╗███████╗
-   ██║   ██║██║██╔════╝██║   ██║██╔══██╗██║     ██║╚════██╗
-   ██║   ██║██║███████╗██║   ██║███████║██║     ██║    ██╔╝
-   ╚██╗ ██╔╝██║╚════██║██║   ██║██╔══██║██║     ██║   ██╔╝
-    ╚████╔╝ ██║███████║╚██████╔╝██║  ██║███████╗██║   ██║
-     ╚═══╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝   ╚═╝
-
-   STUDENT 2 — VISUALIZATION LAYER (branch: feature/visualization)
-═══════════════════════════════════════════════════════════════════ */
-
-/**
- * STUDENT 2 HELPER — getChartDefaults()
- * Pre-configured Chart.js global options matching the dark theme.
- *
- * @returns {Object} Chart.js options object
- */
-function getChartDefaults() {
-  return {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        labels: { color: '#6b748f', font: { family: 'Courier Prime', size: 12 } }
-      },
-      tooltip: {
-        backgroundColor: '#1c2030',
-        borderColor: '#2a2f45',
-        borderWidth: 1,
-        titleColor: '#f0b429',
-        bodyColor: '#d4daf0',
-        titleFont: { family: 'Courier Prime', size: 12 },
-        bodyFont: { family: 'Courier Prime', size: 11 }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
-    },
-    scales: {
-      x: {
-        ticks: { color: '#6b748f', font: { family: 'Courier Prime', size: 11 } },
-        grid:  { color: '#2a2f45' },
-        title: { color: '#6b748f', font: { family: 'Courier Prime', size: 12 } }
-      },
-      y: {
-        ticks: { color: '#6b748f', font: { family: 'Courier Prime', size: 11 } },
-        grid:  { color: '#2a2f45' },
-        title: { color: '#6b748f', font: { family: 'Courier Prime', size: 12 } }
+
+      body {
+        font-family: var(--sans);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 0 0 80px;
+        background-image: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(255, 255, 255, 0.013) 2px,
+          rgba(255, 255, 255, 0.013) 4px
+        );
       }
-    }
-  };
-}
 
-function formatChartNumber(value) {
-  return Number(value).toFixed(2).replace(/\.?0+$/, "");
-}
+      header {
+        background: var(--surface);
+        border-bottom: 2px solid var(--accent);
+        padding: 20px 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: var(--glow);
+      }
 
-function makeStudyHourScoreBins(data, maxBins) {
-  const rows = (Array.isArray(data) ? data : []).map(function (r) {
-    return { studyHours: num(r.studyHours), score: num(r.score) };
-  });
-  if (rows.length === 0) return [];
-  const hours = rows.map(function (r) {
-    return r.studyHours;
-  });
-  const min = Math.min.apply(null, hours);
-  const max = Math.max.apply(null, hours);
-  const binCount = min === max ? 1 : Math.min(maxBins, Math.max(1, Math.ceil(Math.sqrt(rows.length))));
-  const width = min === max ? 1 : (max - min) / binCount;
-  const bins = [];
-  for (let i = 0; i < binCount; i++) {
-    bins.push({
-      from: min + width * i,
-      to: i === binCount - 1 ? max : min + width * (i + 1),
-      count: 0,
-      scoreTotal: 0,
-      minScore: Infinity,
-      maxScore: -Infinity,
-    });
-  }
-  rows.forEach(function (r) {
-    const index = min === max ? 0 : Math.min(binCount - 1, Math.floor((r.studyHours - min) / width));
-    const bin = bins[index];
-    bin.count++;
-    bin.scoreTotal += r.score;
-    bin.minScore = Math.min(bin.minScore, r.score);
-    bin.maxScore = Math.max(bin.maxScore, r.score);
-  });
-  return bins.filter(function (bin) {
-    return bin.count > 0;
-  }).map(function (bin) {
-    return Object.assign({}, bin, {
-      label: formatChartNumber(bin.from) + "-" + formatChartNumber(bin.to) + "h",
-      meanScore: bin.scoreTotal / bin.count,
-    });
-  });
-}
+      .header-left h1 {
+        font-family: var(--mono);
+        font-size: 1.3rem;
+        color: var(--accent);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
 
-/**
- * Student 2 scatter-chart helper only. Student 3 owns the general
- * linearRegression() exercise later in this file.
- */
-function student2LinearRegression(xs, ys) {
-  const n = xs.length;
-  if (n < 2) {
-    return { m: 0, b: n === 1 ? ys[0] : 0 };
-  }
-  let sx = 0;
-  let sy = 0;
-  let sxy = 0;
-  let sx2 = 0;
-  for (let i = 0; i < n; i++) {
-    sx += xs[i];
-    sy += ys[i];
-    sxy += xs[i] * ys[i];
-    sx2 += xs[i] * xs[i];
-  }
-  const den = n * sx2 - sx * sx;
-  if (Math.abs(den) < 1e-9) {
-    return { m: 0, b: sy / n };
-  }
-  const m = (n * sxy - sx * sy) / den;
-  const b = (sy - m * sx) / n;
-  return { m: m, b: b };
-}
+      .header-left p {
+        font-size: 0.78rem;
+        color: var(--text-dim);
+        margin-top: 2px;
+        font-family: var(--mono);
+      }
 
-/**
- * STUDENT 2 — initCharts()
- *
- * PURPOSE: Entry point. Called from onDataReady() after data is loaded.
- * Call all four draw functions here, passing window.DS.
- *
- * IMPORTANT: Destroy any existing Chart instance before creating a new one.
- * Use window.CHARTS to track instances:
- *   if (window.CHARTS['barChart']) window.CHARTS['barChart'].destroy();
- */
-function initCharts() {
-  ["barChart", "scatterChart", "histChart", "pieChart"].forEach(function (id) {
-    if (window.CHARTS[id]) {
-      window.CHARTS[id].destroy();
-      window.CHARTS[id] = undefined;
-    }
-  });
-  if (!Array.isArray(window.DS) || window.DS.length === 0) {
-    return;
-  }
-  drawBarChart("barChart", window.DS);
-  drawScatterPlot("scatterChart", window.DS);
-  drawHistogram("histChart", window.DS);
-  drawPieChart("pieChart", window.DS);
-}
+      .git-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 8px 14px;
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        color: var(--accent2);
+      }
 
-/**
- * STUDENT 2 — drawBarChart(canvasId, data)
- *
- * PURPOSE: Bar chart — Study-hour ranges on x-axis, mean derived score on y-axis.
- *
- * @param {string} canvasId - 'barChart'
- * @param {Array}  data     - window.DS array
- *
- * CHART.JS GUIDE:
- *  const ctx = document.getElementById(canvasId).getContext('2d');
- *  new Chart(ctx, { type: 'bar', data: { labels: [...], datasets: [{ data: [...] }] } });
- *
- * VISUAL REQUIREMENTS:
- *  - Labels = study-hour ranges built from the full CSV dataset
- *  - Bars colored with the amber accent (#f0b429) at 80% opacity
- *  - X-axis: Study Hours (binned from studyHours)
- *  - Y-axis: Mean derived Final Score (0–100)
- *  - Enable the legend and tooltip
- */
-function drawBarChart(canvasId, data) {
-  const rows = Array.isArray(data) ? data : [];
-  const bins = makeStudyHourScoreBins(rows, 20);
-  const labels = bins.map(function (bin) {
-    return bin.label;
-  });
-  const scores = bins.map(function (bin) {
-    return Number(bin.meanScore.toFixed(2));
-  });
-  const defaults = getChartDefaults();
-  const ph = document.getElementById("barPlaceholder");
-  const canvas = document.getElementById(canvasId);
-  if (ph) {
-    ph.style.display = "none";
-  }
-  if (canvas) {
-    canvas.style.display = "block";
-  }
-  const ctx = canvas.getContext("2d");
-  window.CHARTS[canvasId] = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: "Mean derived score",
-          data: scores,
-          backgroundColor: "rgba(240, 180, 41, 0.8)",
-          borderColor: "rgba(240, 180, 41, 1)",
-          borderWidth: 1,
-        },
-      ],
-    },
-    options: {
-      responsive: defaults.responsive,
-      maintainAspectRatio: defaults.maintainAspectRatio,
-      interaction: { mode: "index", intersect: false },
-      plugins: {
-        legend: Object.assign({}, defaults.plugins.legend, { display: true }),
-        tooltip: Object.assign({}, defaults.plugins.tooltip, {
-          callbacks: {
-            label: function (ctx) {
-              const bin = bins[ctx.dataIndex];
-              return [
-                "Mean derived score: " + scores[ctx.dataIndex].toFixed(2),
-                "Rows in bin: " + bin.count,
-                "Score range: " + formatChartNumber(bin.minScore) + "-" + formatChartNumber(bin.maxScore),
-              ];
-            },
-          },
-        }),
-        subtitle: {
-          display: rows.length > 0,
-          text: "All " + rows.length + " rows grouped into " + bins.length + " study-hour bins",
-          color: "#6b748f",
-          font: { family: "Courier Prime", size: 11 },
-        },
-      },
-      scales: {
-        x: Object.assign({}, defaults.scales.x, {
-          title: {
-            display: true,
-            text: "Study-hour ranges (all rows)",
-            color: "#6b748f",
-          },
-        }),
-        y: Object.assign({}, defaults.scales.y, {
-          title: { display: true, text: "Mean derived final score (0-100)", color: "#6b748f" },
-          min: 0,
-          max: 100,
-          beginAtZero: true,
-        }),
-      },
-    },
-  });
-}
+      .git-badge .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent2);
+        animation: pulse 2s infinite;
+      }
 
-/**
- * STUDENT 2 — drawScatterPlot(canvasId, data)
- *
- * PURPOSE: Scatter — derived attendance % (x) vs derived final score (y), one point per row; teal (#3ecfcf);
- *          tooltips show student name; optional linear regression trend line.
- */
-function drawScatterPlot(canvasId, data) {
-  const rows = Array.isArray(data) ? data : [];
-  const xs = rows.map(function (r) {
-    return num(r.attendance);
-  });
-  const ys = rows.map(function (r) {
-    return num(r.score);
-  });
-  const scatterPts = rows.map(function (item) {
-    return { x: num(item.attendance), y: num(item.score) };
-  });
-  const fit = student2LinearRegression(xs, ys);
-  const yAt0 = Math.min(100, Math.max(0, fit.b));
-  const yAt100 = Math.min(100, Math.max(0, fit.m * 100 + fit.b));
-  const trendPts = [
-    { x: 0, y: yAt0 },
-    { x: 100, y: yAt100 },
-  ];
-  const defaults = getChartDefaults();
-  const ph = document.getElementById("scatterPlaceholder");
-  const canvas = document.getElementById(canvasId);
-  if (ph) {
-    ph.style.display = "none";
-  }
-  if (canvas) {
-    canvas.style.display = "block";
-  }
-  const ctx = canvas.getContext("2d");
-  window.CHARTS[canvasId] = new Chart(ctx, {
-    data: {
-      datasets: [
-        {
-          type: "scatter",
-          label: "Students",
-          data: scatterPts,
-          backgroundColor: "rgba(62, 207, 207, 0.25)",
-          borderColor: "rgba(62, 207, 207, 0.7)",
-          borderWidth: 1,
-          pointRadius: 3,
-          pointHoverRadius: 6,
-          order: 2,
-        },
-        {
-          type: "line",
-          label: "Linear fit",
-          data: trendPts,
-          borderColor: "rgba(240, 180, 41, 0.95)",
-          backgroundColor: "transparent",
-          borderWidth: 2,
-          pointRadius: 0,
-          fill: false,
-          tension: 0,
-          order: 1,
-        },
-      ],
-    },
-    options: {
-      responsive: defaults.responsive,
-      maintainAspectRatio: defaults.maintainAspectRatio,
-      plugins: {
-        legend: Object.assign({}, defaults.plugins.legend, { display: true }),
-        subtitle: {
-          display: true,
-          text: "Attendance and score are derived indices from the CSV usage fields",
-          color: "#6b748f",
-          font: { family: "Courier Prime", size: 11 },
-        },
-        tooltip: Object.assign({}, defaults.plugins.tooltip, {
-          callbacks: {
-            label: function (ctx) {
-              if (ctx.datasetIndex === 1) {
-                return "Trend: y ≈ " + fit.m.toFixed(3) + "x + " + fit.b.toFixed(2);
-              }
-              const i = ctx.dataIndex;
-              const nm = rows[i] ? String(rows[i].name || "") : "";
-              const x = ctx.parsed.x;
-              const y = ctx.parsed.y;
-              const head = nm ? nm + ": " : "";
-              return head + "Derived attendance " + x.toFixed(1) + "%, derived score " + y.toFixed(1);
-            },
-          },
-        }),
-      },
-      scales: {
-        x: Object.assign({}, defaults.scales.x, {
-          title: { display: true, text: "Derived attendance index (%)", color: "#6b748f" },
-          min: 0,
-          max: 100,
-        }),
-        y: Object.assign({}, defaults.scales.y, {
-          title: { display: true, text: "Derived final score", color: "#6b748f" },
-          min: 0,
-          max: 100,
-        }),
-      },
-    },
-  });
-}
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
 
-/**
- * STUDENT 2 — drawHistogram(canvasId, data)
- *
- * PURPOSE: Histogram — distribution of derived Final Scores in 10-point bins.
- *          Bins: 40–49, 50–59, 60–69, 70–79, 80–89, 90–100
- *
- * @param {string} canvasId - 'histChart'
- * @param {Array}  data     - window.DS array
- *
- * STEPS:
- *  1. Define bins: [40,50,60,70,80,90,100]
- *  2. Count how many students' scores fall in each bin
- *  3. Render as a bar chart (type: 'bar') with no gap between bars
- *     (use barPercentage: 1.0, categoryPercentage: 1.0)
- *
- * VISUAL REQUIREMENTS:
- *  - Bars colored coral (#e05c6a) at 75% opacity
- *  - X-axis labels: '40s', '50s', '60s', '70s', '80s', '90s+'
- *  - Y-axis: Count (integer ticks)
- */
-function drawHistogram(canvasId, data) {
-  /* Six labels '40s'...'90s+'. Scores below 40 roll into the first bin so totals match N. */
-  const rows = Array.isArray(data) ? data : [];
-  const scores = rows.map(function (r) {
-    return num(r.score);
-  });
-  const binLabels = ["40s", "50s", "60s", "70s", "80s", "90s+"];
-  const counts = [0, 0, 0, 0, 0, 0];
-  scores.forEach(function (s) {
-    if (s < 50) {
-      counts[0]++;
-    } else if (s < 60) {
-      counts[1]++;
-    } else if (s < 70) {
-      counts[2]++;
-    } else if (s < 80) {
-      counts[3]++;
-    } else if (s < 90) {
-      counts[4]++;
-    } else {
-      counts[5]++;
-    }
-  });
-  const defaults = getChartDefaults();
-  const ph = document.getElementById("histPlaceholder");
-  const canvas = document.getElementById(canvasId);
-  if (ph) {
-    ph.style.display = "none";
-  }
-  if (canvas) {
-    canvas.style.display = "block";
-  }
-  const ctx = canvas.getContext("2d");
-  window.CHARTS[canvasId] = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: binLabels,
-      datasets: [
-        {
-          label: "Count",
-          data: counts,
-          backgroundColor: "rgba(224, 92, 106, 0.75)",
-          borderColor: "rgba(224, 92, 106, 1)",
-          borderWidth: 1,
-          barPercentage: 0.85,
-          categoryPercentage: 0.9,
-        },
-      ],
-    },
-    options: {
-      responsive: defaults.responsive,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: Object.assign({}, defaults.plugins.legend, { display: false }),
-        subtitle: {
-          display: true,
-          text: "Final score is a derived composite index, not a direct CSV column",
-          color: "#6b748f",
-          font: { family: "Courier Prime", size: 11 },
-        },
-        tooltip: defaults.plugins.tooltip,
-      },
-      scales: {
-        x: Object.assign({}, defaults.scales.x, {
-          title: { display: true, text: "Derived final score (10 pt bands)", color: "#6b748f" },
-        }),
-        y: Object.assign({}, defaults.scales.y, {
-          title: { display: true, text: "Count", color: "#6b748f" },
-          beginAtZero: true,
-          ticks: {
-            stepSize: 1,
-            callback: function (value) {
-              return Number.isInteger(value) ? value : "";
-            },
-          },
-        }),
-      },
-    },
-  });
-}
+      main {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 40px 30px;
+      }
 
-/**
- * STUDENT 2 — drawPieChart(canvasId, data)
- *
- * PURPOSE: Pie / doughnut chart showing derived grade distribution (A, B, C, D).
- *
- * @param {string} canvasId - 'pieChart'
- * @param {Array}  data     - window.DS array
- *
- * STEPS:
- *  1. Count occurrences of each grade in data
- *  2. Build labels: ['A', 'B', 'C', 'D'] and matching counts
- *  3. Use type: 'doughnut'
- *
- * VISUAL REQUIREMENTS:
- *  - Colors: A=#56d364 (green), B=#f0b429 (amber), C=#3ecfcf (teal), D=#e05c6a (coral)
- *  - Show percentage labels in tooltip
- *  - Cutout: '55%' for doughnut style
- */
-function drawPieChart(canvasId, data) {
-  const rows = Array.isArray(data) ? data : [];
-  const order = ["A", "B", "C", "D"];
-  const counts = { A: 0, B: 0, C: 0, D: 0 };
-  rows.forEach(function (r) {
-    const g = String(r.grade || "").toUpperCase();
-    if (counts[g] !== undefined) {
-      counts[g]++;
-    }
-  });
-  const values = order.map(function (k) {
-    return counts[k];
-  });
-  const colors = {
-    A: "#56d364",
-    B: "#f0b429",
-    C: "#3ecfcf",
-    D: "#e05c6a",
-  };
-  const bg = order.map(function (k) {
-    return colors[k] + "bf";
-  });
-  const border = order.map(function (k) {
-    return colors[k];
-  });
-  const defaults = getChartDefaults();
-  const ph = document.getElementById("piePlaceholder");
-  const canvas = document.getElementById(canvasId);
-  if (ph) {
-    ph.style.display = "none";
-  }
-  if (canvas) {
-    canvas.style.display = "block";
-  }
-  const ctx = canvas.getContext("2d");
-  window.CHARTS[canvasId] = new Chart(ctx, {
-    type: "doughnut",
-    data: {
-      labels: order,
-      datasets: [
-        {
-          data: values,
-          backgroundColor: bg,
-          borderColor: border,
-          borderWidth: 2,
-        },
-      ],
-    },
-    options: {
-      responsive: defaults.responsive,
-      maintainAspectRatio: false,
-      cutout: "60%",
-      plugins: {
-        legend: Object.assign({}, defaults.plugins.legend, { 
-          display: true,
-          position: 'right'
-        }),
-        subtitle: {
-          display: true,
-          text: "Grades are A-D bands from the derived score",
-          color: "#6b748f",
-          font: { family: "Courier Prime", size: 11 },
-        },
-        tooltip: Object.assign({}, defaults.plugins.tooltip, {
-          callbacks: {
-            label: function (ctx) {
-              const v = ctx.raw;
-              const sum = ctx.dataset.data.reduce(function (a, b) {
-                return a + b;
-              }, 0);
-              const pct = sum ? ((v / sum) * 100).toFixed(1) : "0.0";
-              return ctx.label + ": " + v + " (" + pct + "%)";
-            },
-          },
-        }),
-      },
-    },
-  });
-}
+      .section {
+        margin-bottom: 56px;
+      }
 
-/* ═══════════════════════════════════════════════════════════════════
-   ███████╗████████╗ █████╗ ████████╗███████╗
-   ██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██╔════╝
-   ███████╗   ██║   ███████║   ██║   ███████╗
-   ╚════██║   ██║   ██╔══██║   ██║   ╚════██║
-   ███████║   ██║   ██║  ██║   ██║   ███████║
-   ╚══════╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚══════╝
+      .section-header {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+      }
 
-   STUDENT 3 — STATISTICAL ANALYSIS ENGINE (branch: feature/statistics)
-═══════════════════════════════════════════════════════════════════ */
+      .section-header h2 {
+        font-family: var(--mono);
+        font-size: 1.05rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
 
-/**
- * STUDENT 3 — mean(arr)
- *
- * PURPOSE: Compute the arithmetic mean of a numeric array.
- *
- * @param  {number[]} arr - Array of numbers
- * @returns {number}       Mean value, rounded to 2 decimal places
- *
- * FORMULA: μ = (Σxᵢ) / n
- *
- * EXAMPLE:
- *   mean([10, 20, 30])  →  20.00
- *   mean([91, 68, 97])  →  85.33
- */
-function roundTo(value, places) {
-  return Number(value.toFixed(places));
-}
+      .owner-tag {
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 700;
+      }
 
-function numericValues(arr) {
-  return (Array.isArray(arr) ? arr : [])
-    .map(function (value) {
-      return Number(value);
-    })
-    .filter(Number.isFinite);
-}
+      .tag-s1 {
+        background: rgba(240, 180, 41, 0.15);
+        color: var(--accent);
+        border: 1px solid rgba(240, 180, 41, 0.3);
+      }
+      .tag-s2 {
+        background: rgba(62, 207, 207, 0.15);
+        color: var(--accent2);
+        border: 1px solid rgba(62, 207, 207, 0.3);
+      }
+      .tag-s3 {
+        background: rgba(224, 92, 106, 0.15);
+        color: var(--accent3);
+        border: 1px solid rgba(224, 92, 106, 0.3);
+      }
 
-function average(arr) {
-  const values = numericValues(arr);
-  if (values.length === 0) return 0;
-  const total = values.reduce(function (sum, value) {
-    return sum + value;
-  }, 0);
-  return total / values.length;
-}
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+      }
 
-function mean(arr) {
-  return roundTo(average(arr), 2);
-}
+      .dataset-collapse {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        overflow: hidden;
+      }
 
-/**
- * STUDENT 3 — median(arr)
- *
- * PURPOSE: Find the middle value of a sorted array.
- *          For even-length arrays, average the two middle values.
- *
- * @param  {number[]} arr - Array of numbers
- * @returns {number}       Median, rounded to 2 decimal places
- *
- * FORMULA:
- *   odd n:  arr[Math.floor(n/2)]  (after sorting)
- *   even n: (arr[n/2 - 1] + arr[n/2]) / 2
- *
- * EXAMPLE:
- *   median([3, 1, 4, 1, 5])  →  3.00
- *   median([1, 2, 3, 4])     →  2.50
- */
-function median(arr) {
-  const values = numericValues(arr).sort(function (a, b) {
-    return a - b;
-  });
-  const n = values.length;
-  if (n === 0) return 0;
-  const middle = Math.floor(n / 2);
-  const value = n % 2 === 1 ? values[middle] : (values[middle - 1] + values[middle]) / 2;
-  return roundTo(value, 2);
-}
+      .dataset-collapse > summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 16px 20px;
+        font-family: var(--mono);
+        font-size: 0.82rem;
+        color: var(--accent);
+        -webkit-user-select: none;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        border-bottom: 1px solid transparent;
+      }
 
-/**
- * STUDENT 3 — mode(arr)
- *
- * PURPOSE: Find the most frequently occurring value(s).
- *          If multiple values tie, return all of them joined by " & ".
- *
- * @param  {number[]} arr - Array of numbers
- * @returns {string}       Mode value(s) as a string (e.g., "75" or "75 & 80")
- *
- * STEPS:
- *  1. Build a frequency map: { value: count }
- *  2. Find the maximum count
- *  3. Collect all values that have that count
- *  4. Return them joined by " & "
- */
-function mode(arr) {
-  const values = numericValues(arr);
-  if (values.length === 0) return "—";
-  const counts = new Map();
-  values.forEach(function (value) {
-    counts.set(value, (counts.get(value) || 0) + 1);
-  });
-  const maxCount = Math.max.apply(null, Array.from(counts.values()));
-  return Array.from(counts.entries())
-    .filter(function (entry) {
-      return entry[1] === maxCount;
-    })
-    .map(function (entry) {
-      return entry[0];
-    })
-    .sort(function (a, b) {
-      return a - b;
-    })
-    .join(" & ");
-}
+      .dataset-collapse > summary .hint {
+        color: var(--text-dim);
+        font-size: 0.75rem;
+        font-weight: 400;
+      }
 
-/**
- * STUDENT 3 — variance(arr)
- *
- * PURPOSE: Compute the population variance of a numeric array.
- *
- * @param  {number[]} arr - Array of numbers
- * @returns {number}       Variance σ², rounded to 2 decimal places
- *
- * FORMULA: σ² = (Σ(xᵢ − μ)²) / n
- *
- * EXAMPLE:
- *   variance([2, 4, 4, 4, 5, 5, 7, 9])  →  4.00
- */
-function variance(arr) {
-  const values = numericValues(arr);
-  if (values.length === 0) return 0;
-  const avg = average(values);
-  const totalSquaredDiff = values.reduce(function (sum, value) {
-    return sum + Math.pow(value - avg, 2);
-  }, 0);
-  return roundTo(totalSquaredDiff / values.length, 2);
-}
+      .dataset-collapse > summary::-webkit-details-marker {
+        display: none;
+      }
 
-/**
- * STUDENT 3 — stdDev(arr)
- *
- * PURPOSE: Standard deviation — square root of population variance.
- *
- * @param  {number[]} arr - Array of numbers
- * @returns {number}       σ, rounded to 2 decimal places
- *
- * FORMULA: σ = √(variance(arr))
- */
-function stdDev(arr) {
-  return roundTo(Math.sqrt(variance(arr)), 2);
-}
+      .dataset-collapse[open] > summary {
+        border-bottom-color: var(--border);
+      }
 
-/**
- * STUDENT 3 — pearsonCorr(x, y)
- *
- * PURPOSE: Pearson correlation coefficient r between two arrays.
- *          r ranges from -1 (perfect negative) to +1 (perfect positive).
- *
- * @param  {number[]} x - Independent variable values
- * @param  {number[]} y - Dependent variable values (same length as x)
- * @returns {number}      r, rounded to 4 decimal places
- *
- * FORMULA:
- *   r = Σ((xᵢ−x̄)(yᵢ−ȳ)) / √(Σ(xᵢ−x̄)² · Σ(yᵢ−ȳ)²)
- *
- * INTERPRETATION HELPER (use in renderStats):
- *   |r| ≥ 0.7 → Strong
- *   |r| ≥ 0.4 → Moderate
- *   |r| < 0.4 → Weak
- *   Sign: positive = direct relationship, negative = inverse
- */
-function pearsonCorr(x, y) {
-  const pairs = numericPairs(x, y);
-  if (pairs.length === 0) return NaN;
-  const xs = pairs.map(function (pair) {
-    return pair[0];
-  });
-  const ys = pairs.map(function (pair) {
-    return pair[1];
-  });
-  const meanX = average(xs);
-  const meanY = average(ys);
-  let numerator = 0;
-  let sumSqX = 0;
-  let sumSqY = 0;
-  pairs.forEach(function (pair) {
-    const dx = pair[0] - meanX;
-    const dy = pair[1] - meanY;
-    numerator += dx * dy;
-    sumSqX += dx * dx;
-    sumSqY += dy * dy;
-  });
-  const denominator = Math.sqrt(sumSqX * sumSqY);
-  if (denominator === 0) return NaN;
-  return roundTo(numerator / denominator, 4);
-}
+      .dataset-collapse__chev {
+        color: var(--text-dim);
+        font-size: 0.7rem;
+        transition: transform 0.2s ease;
+      }
 
-/**
- * STUDENT 3 — linearRegression(x, y)
- *
- * PURPOSE: Simple linear regression — find the best-fit line y = mx + b.
- *
- * @param  {number[]} x - Independent variable values
- * @param  {number[]} y - Dependent variable values
- * @returns {{ slope: number, intercept: number, rSquared: number }}
- *
- * FORMULAS:
- *   m (slope)     = Σ((xᵢ−x̄)(yᵢ−ȳ)) / Σ(xᵢ−x̄)²
- *   b (intercept) = ȳ − m·x̄
- *   R²            = r² (square the Pearson correlation coefficient)
- *
- * ROUND: slope and intercept to 4 decimal places; R² to 4 decimal places.
- *
- * EXAMPLE OUTPUT: { slope: 2.1, intercept: 45.3, rSquared: 0.87 }
- */
-function numericPairs(x, y) {
-  const length = Math.min(Array.isArray(x) ? x.length : 0, Array.isArray(y) ? y.length : 0);
-  const pairs = [];
-  for (let i = 0; i < length; i++) {
-    const xVal = Number(x[i]);
-    const yVal = Number(y[i]);
-    if (Number.isFinite(xVal) && Number.isFinite(yVal)) {
-      pairs.push([xVal, yVal]);
-    }
-  }
-  return pairs;
-}
+      .dataset-collapse[open] .dataset-collapse__chev {
+        transform: rotate(90deg);
+      }
 
-function linearRegression(x, y) {
-  const pairs = numericPairs(x, y);
-  if (pairs.length === 0) {
-    return { slope: NaN, intercept: NaN, rSquared: NaN };
-  }
-  const xs = pairs.map(function (pair) {
-    return pair[0];
-  });
-  const ys = pairs.map(function (pair) {
-    return pair[1];
-  });
-  const meanX = average(xs);
-  const meanY = average(ys);
-  let numerator = 0;
-  let denominator = 0;
-  pairs.forEach(function (pair) {
-    const dx = pair[0] - meanX;
-    numerator += dx * (pair[1] - meanY);
-    denominator += dx * dx;
-  });
-  if (denominator === 0) {
-    return { slope: NaN, intercept: NaN, rSquared: NaN };
-  }
-  const slope = numerator / denominator;
-  const intercept = meanY - slope * meanX;
-  const r = pearsonCorr(xs, ys);
-  return {
-    slope: roundTo(slope, 4),
-    intercept: roundTo(intercept, 4),
-    rSquared: Number.isFinite(r) ? roundTo(r * r, 4) : NaN,
-  };
-}
+      .dataset-collapse .panel {
+        border: none;
+        border-radius: 0;
+      }
 
-/**
- * STUDENT 3 — renderStats(data)
- *
- * PURPOSE: Compute all statistics from data and update the DOM.
- *          Called from onDataReady() after Student 1 loads the dataset.
- *
- * @param {Array} data - window.DS array
- *
- * DOM ELEMENTS TO UPDATE:
- *   #statMean, #statMedian, #statStdDev, #statMode  — summary cards
- *   #dCount, #dMin, #dMax, #dRange, #dVariance, #dStdDev — descriptive stats
- *   #rPearson, #rInterp, #rSlope, #rIntercept, #rSquared, #rEquation — regression
- *
- * STEPS:
- *  1. Extract scores:    data.map(d => d.score)
- *  2. Extract hours:     data.map(d => d.studyHours)
- *  3. Call each stat function and update the matching DOM element
- *  4. For #rEquation, build a string like: "score = 2.10·hours + 45.30"
- *  5. For #rInterp, return the interpretation string (Strong/Moderate/Weak)
- *     combined with the direction (Positive/Negative)
- *
- * EXAMPLE interpretation: "Strong Positive Correlation"
- */
-function renderStats(data) {
-  try {
-    const rows = Array.isArray(data) ? data : [];
-    const scores = rows
-      .map(function (row) {
-        return Number(row.score);
-      })
-      .filter(Number.isFinite);
-    const pairs = rows
-      .map(function (row) {
-        return [Number(row.studyHours), Number(row.score)];
-      })
-      .filter(function (pair) {
-        return Number.isFinite(pair[0]) && Number.isFinite(pair[1]);
+      .table-wrap {
+        overflow-x: auto;
+        border-radius: var(--radius);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.82rem;
+        font-family: var(--mono);
+      }
+
+      thead th {
+        background: var(--surface2);
+        color: var(--accent);
+        text-align: left;
+        padding: 10px 14px;
+        font-size: 0.72rem;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        border-bottom: 2px solid var(--border);
+        white-space: nowrap;
+      }
+
+      tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background 0.15s;
+      }
+
+      tbody tr:hover {
+        background: var(--surface2);
+      }
+
+      tbody td {
+        padding: 9px 14px;
+        color: var(--text);
+      }
+
+      tbody td.numeric {
+        color: var(--accent2);
+      }
+      tbody td.grade-A {
+        color: #56d364;
+      }
+      tbody td.grade-B {
+        color: var(--accent);
+      }
+      tbody td.grade-C {
+        color: var(--accent3);
+      }
+      tbody td.grade-D {
+        color: #e67e22;
+      }
+      tbody td.grade-F {
+        color: #e05c6a;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      input[type="text"],
+      select {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        padding: 8px 12px;
+        border-radius: var(--radius);
+        outline: none;
+        transition: border-color 0.2s;
+      }
+
+      input[type="text"]:focus,
+      select:focus {
+        border-color: var(--accent);
+      }
+
+      input[type="text"] {
+        width: 220px;
+      }
+
+      button {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        padding: 8px 14px;
+        border-radius: var(--radius);
+        cursor: pointer;
+        letter-spacing: 0.5px;
+        transition: all 0.2s;
+      }
+
+      button:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      button.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #000;
+        font-weight: 700;
+      }
+
+      button.primary:hover {
+        background: #ffc946;
+      }
+
+      .count-badge {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--text-dim);
+        margin-left: auto;
+      }
+
+      .chart-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+      }
+
+      .chart-box {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        min-height: 380px;
+      }
+
+      .chart-box h4 {
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        color: var(--text-dim);
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+      }
+
+      .chart-box canvas {
+        max-height: 320px;
+        width: 100%;
+        display: none;
+      }
+
+      .chart-placeholder {
+        height: 280px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 10px;
+        color: var(--text-dim);
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        border: 2px dashed var(--border);
+        border-radius: var(--radius);
+      }
+
+      .chart-placeholder span {
+        font-size: 2rem;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-bottom: 24px;
+      }
+
+      .stat-card {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 16px;
+        text-align: center;
+      }
+
+      .stat-card .stat-label {
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        color: var(--text-dim);
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+
+      .stat-card .stat-value {
+        font-family: var(--mono);
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--accent3);
+      }
+
+      .stat-card .stat-sub {
+        font-size: 0.7rem;
+        color: var(--text-dim);
+        margin-top: 4px;
+      }
+
+      .stat-placeholder {
+        font-family: var(--mono);
+        font-size: 1.2rem;
+        color: var(--border);
+      }
+
+      .analysis-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      .analysis-panel {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 18px;
+      }
+
+      .analysis-panel h4 {
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--text-dim);
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 14px;
+      }
+
+      .stat-list {
+        list-style: none;
+        font-family: var(--mono);
+        font-size: 0.82rem;
+      }
+
+      .stat-list li {
+        display: flex;
+        justify-content: space-between;
+        padding: 7px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .stat-list li:last-child {
+        border-bottom: none;
+      }
+
+      .stat-list .key {
+        color: var(--text-dim);
+      }
+      .stat-list .val {
+        color: var(--accent2);
+      }
+
+      .todo-callout {
+        background: rgba(240, 180, 41, 0.08);
+        border: 1px solid rgba(240, 180, 41, 0.25);
+        border-left: 4px solid var(--accent);
+        border-radius: var(--radius);
+        padding: 14px 18px;
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        color: var(--accent);
+        margin-bottom: 20px;
+        line-height: 1.7;
+      }
+
+      .todo-callout strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 0.72rem;
+        letter-spacing: 1px;
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 60px;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--text-dim);
+        letter-spacing: 1px;
+      }
+
+      @media (max-width: 900px) {
+        .chart-grid {
+          grid-template-columns: 1fr;
+        }
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .analysis-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-left">
+        <h1>DataSci Collab Dashboard</h1>
+        <p>Student Performance Dataset Â· Git Collaborative Activity</p>
+      </div>
+      <div class="git-badge">
+        <span class="dot"></span>
+        branch: <strong id="currentBranch">main</strong>
+      </div>
+    </header>
+
+    <main>
+      <section class="section" id="sec-data">
+        <div class="section-header">
+          <h2>01 Â· Dataset Explorer</h2>
+          <span class="owner-tag tag-s1">Student 1 Â· Repo Owner</span>
+        </div>
+
+        <details class="dataset-collapse" id="datasetExplorerCollapse" open>
+          <summary>
+            <span
+              >Data table
+              <span class="hint">(click to show or hide)</span></span
+            >
+            <span class="dataset-collapse__chev" aria-hidden="true">â–¶</span>
+          </summary>
+          <div class="panel">
+            <div class="toolbar">
+              <input
+                type="text"
+                id="filterInput"
+                placeholder="Filter by user ID (e.g. U00001) or labelâ€¦"
+              />
+              <select id="sortSelect" title="Sort by column">
+                <option value="">Sort by...</option>
+                <option value="name">Name</option>
+                <option value="studyHours">Study Hours</option>
+                <option value="score">Derived Final Score</option>
+                <option value="grade">Grade</option>
+                <option value="attendance">Derived Attendance %</option>
+              </select>
+              <button type="button" onclick="applyFilterSort()">Apply</button>
+              <button type="button" onclick="resetTable()">Reset</button>
+              <span class="count-badge" id="rowCount">â€” rows</span>
+              <button
+                type="button"
+                id="btnToggleRowPreview"
+                hidden
+                onclick="toggleDatasetRowPreview()"
+              >
+                Show all rows
+              </button>
+            </div>
+
+            <div class="table-wrap">
+              <table id="dataTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>User / label</th>
+                    <th>Study Hours/Week</th>
+                    <th>Derived Attendance %</th>
+                    <th>Academic Focus Index</th>
+                    <th>Derived Final Score</th>
+                    <th>Assignments Done</th>
+                    <th>Sleep Hrs/Night</th>
+                    <th>Addicted</th>
+                    <th>Grade</th>
+                  </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <section class="section" id="sec-viz">
+        <div class="section-header">
+          <h2>02 Â· Visualizations</h2>
+          <span class="owner-tag tag-s2">Student 2 Â· Collaborator</span>
+        </div>
+
+        <div class="chart-grid">
+          <div class="chart-box">
+            <h4>Study Hours vs Derived Score</h4>
+            <div class="chart-placeholder" id="barPlaceholder">
+              <span>ðŸ“Š</span>
+              Chart appears when the CSV data is ready.
+            </div>
+            <canvas id="barChart"></canvas>
+          </div>
+
+          <div class="chart-box">
+            <h4>Derived Attendance % vs Derived Score</h4>
+            <div class="chart-placeholder" id="scatterPlaceholder">
+              <span>ðŸ”µ</span>
+              Chart appears when the CSV data is ready.
+            </div>
+            <canvas id="scatterChart"></canvas>
+          </div>
+
+          <div class="chart-box">
+            <h4>Derived Score Distribution</h4>
+            <div class="chart-placeholder" id="histPlaceholder">
+              <span>ðŸ“ˆ</span>
+              Chart appears when the CSV data is ready.
+            </div>
+            <canvas id="histChart"></canvas>
+          </div>
+
+          <div class="chart-box">
+            <h4>Derived Grade Distribution</h4>
+            <div class="chart-placeholder" id="piePlaceholder">
+              <span>ðŸ•</span>
+              Chart appears when the CSV data is ready.
+            </div>
+            <canvas id="pieChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="sec-stats">
+        <div class="section-header">
+          <h2>03 Â· Statistical Analysis</h2>
+          <span class="owner-tag tag-s3">Student 3 Â· Collaborator</span>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Mean Score</div>
+            <div class="stat-value" id="statMean">
+              <span class="stat-placeholder">â€”</span>
+            </div>
+            <div class="stat-sub">Final Score</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Median Score</div>
+            <div class="stat-value" id="statMedian">
+              <span class="stat-placeholder">â€”</span>
+            </div>
+            <div class="stat-sub">Final Score</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Std Deviation</div>
+            <div class="stat-value" id="statStdDev">
+              <span class="stat-placeholder">â€”</span>
+            </div>
+            <div class="stat-sub">Final Score</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Mode</div>
+            <div class="stat-value" id="statMode">
+              <span class="stat-placeholder">â€”</span>
+            </div>
+            <div class="stat-sub">Final Score</div>
+          </div>
+        </div>
+
+        <div class="analysis-row">
+          <div class="analysis-panel">
+            <h4>Descriptive Statistics â€” Final Score</h4>
+            <ul class="stat-list">
+              <li>
+                <span class="key">Count (n)</span>
+                <span class="val" id="dCount">â€”</span>
+              </li>
+              <li>
+                <span class="key">Min</span>
+                <span class="val" id="dMin">â€”</span>
+              </li>
+              <li>
+                <span class="key">Max</span>
+                <span class="val" id="dMax">â€”</span>
+              </li>
+              <li>
+                <span class="key">Range</span>
+                <span class="val" id="dRange">â€”</span>
+              </li>
+              <li>
+                <span class="key">Variance (ÏƒÂ²)</span>
+                <span class="val" id="dVariance">â€”</span>
+              </li>
+              <li>
+                <span class="key">Std Dev (Ïƒ)</span>
+                <span class="val" id="dStdDev">â€”</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="analysis-panel">
+            <h4>Correlation &amp; Regression (Study Hours â†’ Score)</h4>
+            <ul class="stat-list">
+              <li>
+                <span class="key">Pearson r</span>
+                <span class="val" id="rPearson">â€”</span>
+              </li>
+              <li>
+                <span class="key">Interpretation</span>
+                <span class="val" id="rInterp">â€”</span>
+              </li>
+              <li>
+                <span class="key">Slope (m)</span>
+                <span class="val" id="rSlope">â€”</span>
+              </li>
+              <li>
+                <span class="key">Intercept (b)</span>
+                <span class="val" id="rIntercept">â€”</span>
+              </li>
+              <li>
+                <span class="key">RÂ² (fit quality)</span>
+                <span class="val" id="rSquared">â€”</span>
+              </li>
+              <li>
+                <span class="key">Equation</span>
+                <span class="val" id="rEquation">â€”</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      DS COLLAB PROJECT Â· COMPUTER SCIENCE DEPT Â· GIT COLLABORATIVE ACTIVITY
+      <br />Each student's contribution is tracked via commits, branches, and
+      pull requests.
+    </footer>
+
+    <script>
+      "use strict";
+
+      window.DS = [];
+
+      window.CHARTS = {};
+
+      function onDataReady() {
+        if (Array.isArray(window.DS) && window.DS.length > 0) {
+          renderStats(window.DS);
+          initCharts();
+        }
+
+        console.log(
+          "âœ… onDataReady() fired. window.DS has",
+          window.DS.length,
+          "rows.",
+        );
+      }
+
+      const TABLE_PREVIEW_LIMIT = 50;
+      let lastTableRows = [];
+      let datasetTableShowAll = false;
+
+      function clamp(n, lo, hi) {
+        return Math.min(hi, Math.max(lo, n));
+      }
+
+      function num(v) {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : 0;
+      }
+
+      function parseCsvToObjects(text) {
+        const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "");
+        if (lines.length < 2) return [];
+        const headers = lines[0].split(",").map((h) => h.trim());
+        const rows = [];
+        for (let i = 1; i < lines.length; i++) {
+          const parts = lines[i].split(",");
+          if (parts.length < headers.length) continue;
+          const obj = {};
+          for (let j = 0; j < headers.length; j++) {
+            obj[headers[j]] =
+              parts[j] !== undefined ? String(parts[j]).trim() : "";
+          }
+          rows.push(obj);
+        }
+        return rows;
+      }
+
+      function scoreToGrade(s) {
+        if (s >= 90) return "A";
+        if (s >= 80) return "B";
+        if (s >= 70) return "C";
+        if (s >= 60) return "D";
+        return "F";
+      }
+
+      function computeColumnStats(rows) {
+        function minMaxFor(key) {
+          const values = rows
+            .map(function (r) {
+              return num(r[key]);
+            })
+            .filter(Number.isFinite);
+          if (values.length === 0) return { min: 0, max: 0 };
+          return {
+            min: Math.min.apply(null, values),
+            max: Math.max.apply(null, values),
+          };
+        }
+
+        return {
+          daily: minMaxFor("daily_screen_time_hours"),
+          social: minMaxFor("social_media_hours"),
+          gaming: minMaxFor("gaming_hours"),
+          work: minMaxFor("work_study_hours"),
+          sleep: minMaxFor("sleep_hours"),
+          appOpens: minMaxFor("app_opens_per_day"),
+        };
+      }
+
+      function normalizeWithStats(value, stats) {
+        const minV = num(stats && stats.min);
+        const maxV = num(stats && stats.max);
+        const span = maxV - minV;
+        if (!Number.isFinite(span) || span <= 0) return 0.5;
+        return clamp((num(value) - minV) / span, 0, 1);
+      }
+
+      function csvRowToStudent(row, stats) {
+        const daily = num(row.daily_screen_time_hours);
+        const social = num(row.social_media_hours);
+        const gaming = num(row.gaming_hours);
+        const work = num(row.work_study_hours);
+        const sleepH = num(row.sleep_hours);
+        const addicted = num(row.addicted_label);
+        const stress = String(row.stress_level || "");
+        const stressPenalty =
+          stress === "High" ? 0.16 : stress === "Medium" ? 0.08 : 0;
+        const academicImpactPenalty =
+          String(row.academic_work_impact || "") === "Yes" ? 0.1 : 0;
+
+        const workN = normalizeWithStats(work, stats.work);
+        const dailyN = normalizeWithStats(daily, stats.daily);
+        const socialN = normalizeWithStats(social, stats.social);
+        const gamingN = normalizeWithStats(gaming, stats.gaming);
+        const sleepN = normalizeWithStats(sleepH, stats.sleep);
+        const sleepQualityN = 1 - Math.min(1, Math.abs(sleepN - 0.5) * 2);
+        const appOpensN = normalizeWithStats(
+          num(row.app_opens_per_day),
+          stats.appOpens,
+        );
+
+        const attendance = roundTo((1 - dailyN) * 100, 2);
+        const midterm = clamp(
+          roundTo(
+            100 *
+              (0.4 * workN +
+                0.2 * sleepQualityN +
+                0.15 * (1 - socialN) +
+                0.15 * (1 - gamingN) +
+                0.1 * (1 - dailyN) -
+                0.5 * stressPenalty -
+                0.4 * academicImpactPenalty),
+            2,
+          ),
+          0,
+          100,
+        );
+        const score = clamp(
+          roundTo(
+            100 *
+              (0.42 * workN +
+                0.2 * sleepQualityN +
+                0.18 * (1 - dailyN) +
+                0.08 * (1 - socialN) +
+                0.07 * (1 - gamingN) +
+                0.05 * appOpensN -
+                0.5 * stressPenalty -
+                0.4 * academicImpactPenalty -
+                0.12 * addicted),
+            2,
+          ),
+          0,
+          100,
+        );
+        const assignments = clamp(Math.round(appOpensN * 10), 0, 10);
+        const userId = String(row.user_id || "").trim();
+        const name = userId ? "Student " + userId : "";
+        return {
+          name,
+          studyHours: work,
+          attendance,
+          midterm,
+          score,
+          assignments,
+          sleep: sleepH,
+          addicted: addicted === 1,
+          grade: scoreToGrade(score),
+        };
+      }
+
+      function buildStudentsFromRawRows(rawRows) {
+        const rows = Array.isArray(rawRows) ? rawRows : [];
+        const stats = computeColumnStats(rows);
+        return rows.map(function (row) {
+          return csvRowToStudent(row, stats);
+        });
+      }
+
+      function gradeCellClass(grade) {
+        const c = String(grade || "").toUpperCase();
+        if (c === "A" || c === "B" || c === "C" || c === "D" || c === "F")
+          return "grade-" + c;
+        return "grade-F";
+      }
+
+      const GRADE_SORT_RANK = { A: 5, B: 4, C: 3, D: 2, F: 1 };
+
+      function sortValueForKey(row, sortKey) {
+        if (sortKey === "grade")
+          return GRADE_SORT_RANK[String(row.grade).toUpperCase()] ?? -Infinity;
+        const n = Number(row[sortKey]);
+        return Number.isFinite(n) ? n : -Infinity;
+      }
+
+      function showTableStatusRow(message) {
+        lastTableRows = [];
+        const btn = document.getElementById("btnToggleRowPreview");
+        if (btn) btn.hidden = true;
+        const tbody = document.getElementById("tableBody");
+        if (!tbody) return;
+        tbody.replaceChildren();
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 10;
+        td.textContent = message;
+        td.style.textAlign = "center";
+        td.style.color = "var(--text-dim)";
+        td.style.fontFamily = "var(--mono)";
+        td.style.padding = "40px";
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      }
+
+      function updateRowCountAndPreviewControls() {
+        const rowCountEl = document.getElementById("rowCount");
+        const btn = document.getElementById("btnToggleRowPreview");
+        const total = lastTableRows.length;
+        if (rowCountEl) {
+          if (total === 0) {
+            rowCountEl.textContent = "0 rows";
+          } else if (total <= TABLE_PREVIEW_LIMIT || datasetTableShowAll) {
+            rowCountEl.textContent = total + " rows";
+          } else {
+            rowCountEl.textContent =
+              TABLE_PREVIEW_LIMIT + " of " + total + " shown";
+          }
+        }
+        if (btn) {
+          if (total <= TABLE_PREVIEW_LIMIT) {
+            btn.hidden = true;
+          } else {
+            btn.hidden = false;
+            btn.textContent = datasetTableShowAll
+              ? "Show first " + TABLE_PREVIEW_LIMIT + " only"
+              : "Show all rows (" + total + ")";
+          }
+        }
+      }
+
+      function toggleDatasetRowPreview() {
+        datasetTableShowAll = !datasetTableShowAll;
+        renderTable(lastTableRows);
+      }
+
+      async function loadDataset() {
+        const rowCountEl = document.getElementById("rowCount");
+        const csvUrl = new URL("dataset.csv", window.location.href).href;
+        try {
+          if (window.location.protocol === "file:") {
+            throw new Error("file-protocol");
+          }
+          const res = await fetch(csvUrl);
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          const text = await res.text();
+          const rawRows = parseCsvToObjects(text);
+          window.DS = buildStudentsFromRawRows(rawRows);
+          datasetTableShowAll = false;
+          renderTable(window.DS);
+          onDataReady();
+        } catch (err) {
+          console.error(err);
+          window.DS = [];
+          if (rowCountEl) rowCountEl.textContent = "0 rows";
+          datasetTableShowAll = false;
+          if (err && err.message === "file-protocol") {
+            showTableStatusRow(
+              "Cannot load dataset.csv from a file:// URL. Open this folder with a local server (VS Code Live Server, or run: npx serve) and open the page at http://localhost:â€¦ so dataset.csv can load next to this HTML file.",
+            );
+          } else {
+            showTableStatusRow(
+              "Could not load dataset.csv. Check that it sits in the same folder as this HTML file and you are using http://localhost (not file://). URL tried: " +
+                csvUrl,
+            );
+          }
+          onDataReady();
+        }
+      }
+
+      /**
+       * Dynamically build and insert table rows into #tableBody.
+       * @param {Array} data - Array of student objects
+       */
+      function renderTable(data) {
+        const tbody = document.getElementById("tableBody");
+        if (!tbody) return;
+        tbody.replaceChildren();
+        lastTableRows = Array.isArray(data) ? data.slice() : [];
+        if (lastTableRows.length === 0) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 10;
+          td.textContent = "No results found";
+          td.style.textAlign = "center";
+          td.style.color = "var(--text-dim)";
+          td.style.fontFamily = "var(--mono)";
+          td.style.padding = "40px";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+          updateRowCountAndPreviewControls();
+          return;
+        }
+        const overLimit = lastTableRows.length > TABLE_PREVIEW_LIMIT;
+        const displayList =
+          overLimit && !datasetTableShowAll
+            ? lastTableRows.slice(0, TABLE_PREVIEW_LIMIT)
+            : lastTableRows;
+        const frag = document.createDocumentFragment();
+        displayList.forEach((row, i) => {
+          const tr = document.createElement("tr");
+          const addicted = Boolean(row.addicted);
+          const cells = [
+            { text: String(i + 1), numeric: false, grade: false },
+            { text: String(row.name ?? ""), numeric: false, grade: false },
+            { text: String(row.studyHours), numeric: true, grade: false },
+            { text: String(row.attendance), numeric: true, grade: false },
+            { text: String(row.midterm), numeric: true, grade: false },
+            { text: String(row.score), numeric: true, grade: false },
+            { text: String(row.assignments), numeric: true, grade: false },
+            { text: String(row.sleep), numeric: true, grade: false },
+            { text: addicted ? "Yes" : "No", numeric: false, grade: false },
+            { text: String(row.grade ?? ""), numeric: false, grade: true },
+          ];
+          cells.forEach((c) => {
+            const td = document.createElement("td");
+            td.textContent = c.text;
+            if (c.numeric) td.classList.add("numeric");
+            if (c.grade) td.classList.add(gradeCellClass(row.grade));
+            tr.appendChild(td);
+          });
+          frag.appendChild(tr);
+        });
+        tbody.appendChild(frag);
+        updateRowCountAndPreviewControls();
+      }
+
+      function applyFilterSort() {
+        const input = document.getElementById("filterInput");
+        const select = document.getElementById("sortSelect");
+        const q = (input && input.value ? input.value : "")
+          .trim()
+          .toLowerCase();
+        const sortKey = select && select.value ? select.value : "";
+        let rows = Array.isArray(window.DS) ? [...window.DS] : [];
+        if (q) {
+          rows = rows.filter((r) => String(r.name).toLowerCase().includes(q));
+        }
+        if (sortKey) {
+          rows.sort((a, b) => {
+            if (sortKey === "name") {
+              return String(a.name).localeCompare(String(b.name), undefined, {
+                sensitivity: "base",
+              });
+            }
+            return sortValueForKey(b, sortKey) - sortValueForKey(a, sortKey);
+          });
+        }
+        datasetTableShowAll = false;
+        renderTable(rows);
+      }
+
+      function resetTable() {
+        const input = document.getElementById("filterInput");
+        const select = document.getElementById("sortSelect");
+        if (input) input.value = "";
+        if (select) select.value = "";
+        datasetTableShowAll = false;
+        renderTable(window.DS);
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadDataset().catch((err) => console.error(err));
       });
 
-    if (scores.length === 0) return;
+      function getChartDefaults() {
+        return {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: "#6b748f",
+                font: { family: "Courier Prime", size: 12 },
+              },
+            },
+            tooltip: {
+              backgroundColor: "#1c2030",
+              borderColor: "#2a2f45",
+              borderWidth: 1,
+              titleColor: "#f0b429",
+              bodyColor: "#d4daf0",
+              titleFont: { family: "Courier Prime", size: 12 },
+              bodyFont: { family: "Courier Prime", size: 11 },
+            },
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: "#6b748f",
+                font: { family: "Courier Prime", size: 11 },
+              },
+              grid: { color: "#2a2f45" },
+              title: {
+                color: "#6b748f",
+                font: { family: "Courier Prime", size: 12 },
+              },
+            },
+            y: {
+              ticks: {
+                color: "#6b748f",
+                font: { family: "Courier Prime", size: 11 },
+              },
+              grid: { color: "#2a2f45" },
+              title: {
+                color: "#6b748f",
+                font: { family: "Courier Prime", size: 12 },
+              },
+            },
+          },
+        };
+      }
 
-    const hours = pairs.map(function (pair) {
-      return pair[0];
-    });
-    const pairedScores = pairs.map(function (pair) {
-      return pair[1];
-    });
-    const minScore = Math.min.apply(null, scores);
-    const maxScore = Math.max.apply(null, scores);
-    const scoreMean = mean(scores);
-    const scoreMedian = median(scores);
-    const scoreMode = mode(scores);
-    const scoreVariance = variance(scores);
-    const scoreStdDev = stdDev(scores);
-    const r = pearsonCorr(hours, pairedScores);
-    const fit = linearRegression(hours, pairedScores);
+      function formatChartNumber(value) {
+        return Number(value)
+          .toFixed(2)
+          .replace(/\.?0+$/, "");
+      }
 
-    function setStatText(id, value) {
-      const el = document.getElementById(id);
-      if (el) el.textContent = value;
-    }
+      function makeStudyHourScoreBins(data, maxBins) {
+        const rows = (Array.isArray(data) ? data : []).map(function (r) {
+          return { studyHours: num(r.studyHours), score: num(r.score) };
+        });
+        if (rows.length === 0) return [];
+        const hours = rows.map(function (r) {
+          return r.studyHours;
+        });
+        const min = Math.min.apply(null, hours);
+        const max = Math.max.apply(null, hours);
+        const binCount =
+          min === max
+            ? 1
+            : Math.min(maxBins, Math.max(1, Math.ceil(Math.sqrt(rows.length))));
+        const width = min === max ? 1 : (max - min) / binCount;
+        const bins = [];
+        for (let i = 0; i < binCount; i++) {
+          bins.push({
+            from: min + width * i,
+            to: i === binCount - 1 ? max : min + width * (i + 1),
+            count: 0,
+            scoreTotal: 0,
+            minScore: Infinity,
+            maxScore: -Infinity,
+          });
+        }
+        rows.forEach(function (r) {
+          const index =
+            min === max
+              ? 0
+              : Math.min(
+                  binCount - 1,
+                  Math.floor((r.studyHours - min) / width),
+                );
+          const bin = bins[index];
+          bin.count++;
+          bin.scoreTotal += r.score;
+          bin.minScore = Math.min(bin.minScore, r.score);
+          bin.maxScore = Math.max(bin.maxScore, r.score);
+        });
+        return bins
+          .filter(function (bin) {
+            return bin.count > 0;
+          })
+          .map(function (bin) {
+            return Object.assign({}, bin, {
+              label:
+                formatChartNumber(bin.from) +
+                "-" +
+                formatChartNumber(bin.to) +
+                "h",
+              meanScore: bin.scoreTotal / bin.count,
+            });
+          });
+      }
 
-    function fmt(value, places) {
-      return Number.isFinite(value) ? Number(value).toFixed(places) : "—";
-    }
+      /**
+       * Student 2 scatter-chart helper only. Student 3 owns the general
+       * linearRegression() exercise later in this file.
+       */
+      function student2LinearRegression(xs, ys) {
+        const n = xs.length;
+        if (n < 2) {
+          return { m: 0, b: n === 1 ? ys[0] : 0 };
+        }
+        let sx = 0;
+        let sy = 0;
+        let sxy = 0;
+        let sx2 = 0;
+        for (let i = 0; i < n; i++) {
+          sx += xs[i];
+          sy += ys[i];
+          sxy += xs[i] * ys[i];
+          sx2 += xs[i] * xs[i];
+        }
+        const den = n * sx2 - sx * sx;
+        if (Math.abs(den) < 1e-9) {
+          return { m: 0, b: sy / n };
+        }
+        const m = (n * sxy - sx * sy) / den;
+        const b = (sy - m * sx) / n;
+        return { m: m, b: b };
+      }
 
-    function corrInterpretation(value) {
-      if (!Number.isFinite(value)) return "N/A";
-      if (value === 0) return "Weak No Correlation";
-      const abs = Math.abs(value);
-      const strength = abs >= 0.7 ? "Strong" : abs >= 0.4 ? "Moderate" : "Weak";
-      const direction = value > 0 ? "Positive" : "Negative";
-      return strength + " " + direction + " Correlation";
-    }
+      function initCharts() {
+        ["barChart", "scatterChart", "histChart", "pieChart"].forEach(
+          function (id) {
+            if (window.CHARTS[id]) {
+              window.CHARTS[id].destroy();
+              window.CHARTS[id] = undefined;
+            }
+          },
+        );
+        if (!Array.isArray(window.DS) || window.DS.length === 0) {
+          return;
+        }
+        drawBarChart("barChart", window.DS);
+        drawScatterPlot("scatterChart", window.DS);
+        drawHistogram("histChart", window.DS);
+        drawPieChart("pieChart", window.DS);
+      }
 
-    const interceptSign = Number.isFinite(fit.intercept) && fit.intercept < 0 ? " - " : " + ";
-    const interceptText = Number.isFinite(fit.intercept) ? Math.abs(fit.intercept).toFixed(4) : "—";
-    const equation =
-      Number.isFinite(fit.slope) && Number.isFinite(fit.intercept)
-        ? "score = " + fit.slope.toFixed(4) + "·hours" + interceptSign + interceptText
-        : "—";
+      function drawBarChart(canvasId, data) {
+        const rows = Array.isArray(data) ? data : [];
+        const bins = makeStudyHourScoreBins(rows, 20);
+        const labels = bins.map(function (bin) {
+          return bin.label;
+        });
+        const scores = bins.map(function (bin) {
+          return Number(bin.meanScore.toFixed(2));
+        });
+        const defaults = getChartDefaults();
+        const ph = document.getElementById("barPlaceholder");
+        const canvas = document.getElementById(canvasId);
+        if (ph) {
+          ph.style.display = "none";
+        }
+        if (canvas) {
+          canvas.style.display = "block";
+        }
+        const ctx = canvas.getContext("2d");
+        window.CHARTS[canvasId] = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: "Mean derived score",
+                data: scores,
+                backgroundColor: "rgba(240, 180, 41, 0.8)",
+                borderColor: "rgba(240, 180, 41, 1)",
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: defaults.responsive,
+            maintainAspectRatio: defaults.maintainAspectRatio,
+            interaction: { mode: "index", intersect: false },
+            plugins: {
+              legend: Object.assign({}, defaults.plugins.legend, {
+                display: true,
+              }),
+              tooltip: Object.assign({}, defaults.plugins.tooltip, {
+                callbacks: {
+                  label: function (ctx) {
+                    const bin = bins[ctx.dataIndex];
+                    return [
+                      "Mean derived score: " + scores[ctx.dataIndex].toFixed(2),
+                      "Rows in bin: " + bin.count,
+                      "Score range: " +
+                        formatChartNumber(bin.minScore) +
+                        "-" +
+                        formatChartNumber(bin.maxScore),
+                    ];
+                  },
+                },
+              }),
+              subtitle: {
+                display: rows.length > 0,
+                text:
+                  "All " +
+                  rows.length +
+                  " rows grouped into " +
+                  bins.length +
+                  " study-hour bins",
+                color: "#6b748f",
+                font: { family: "Courier Prime", size: 11 },
+              },
+            },
+            scales: {
+              x: Object.assign({}, defaults.scales.x, {
+                title: {
+                  display: true,
+                  text: "Study-hour ranges (all rows)",
+                  color: "#6b748f",
+                },
+              }),
+              y: Object.assign({}, defaults.scales.y, {
+                title: {
+                  display: true,
+                  text: "Mean derived final score (0-100)",
+                  color: "#6b748f",
+                },
+                min: 0,
+                max: 100,
+                beginAtZero: true,
+              }),
+            },
+          },
+        });
+      }
 
-    setStatText("statMean", fmt(scoreMean, 2));
-    setStatText("statMedian", fmt(scoreMedian, 2));
-    setStatText("statStdDev", fmt(scoreStdDev, 2));
-    setStatText("statMode", scoreMode);
+      function drawScatterPlot(canvasId, data) {
+        const rows = Array.isArray(data) ? data : [];
+        const xs = rows.map(function (r) {
+          return num(r.attendance);
+        });
+        const ys = rows.map(function (r) {
+          return num(r.score);
+        });
+        const scatterPts = rows.map(function (item) {
+          return { x: num(item.attendance), y: num(item.score) };
+        });
+        const fit = student2LinearRegression(xs, ys);
+        const yAt0 = Math.min(100, Math.max(0, fit.b));
+        const yAt100 = Math.min(100, Math.max(0, fit.m * 100 + fit.b));
+        const trendPts = [
+          { x: 0, y: yAt0 },
+          { x: 100, y: yAt100 },
+        ];
+        const defaults = getChartDefaults();
+        const ph = document.getElementById("scatterPlaceholder");
+        const canvas = document.getElementById(canvasId);
+        if (ph) {
+          ph.style.display = "none";
+        }
+        if (canvas) {
+          canvas.style.display = "block";
+        }
+        const ctx = canvas.getContext("2d");
+        window.CHARTS[canvasId] = new Chart(ctx, {
+          data: {
+            datasets: [
+              {
+                type: "scatter",
+                label: "Students",
+                data: scatterPts,
+                backgroundColor: "rgba(62, 207, 207, 0.25)",
+                borderColor: "rgba(62, 207, 207, 0.7)",
+                borderWidth: 1,
+                pointRadius: 3,
+                pointHoverRadius: 6,
+                order: 2,
+              },
+              {
+                type: "line",
+                label: "Linear fit",
+                data: trendPts,
+                borderColor: "rgba(240, 180, 41, 0.95)",
+                backgroundColor: "transparent",
+                borderWidth: 2,
+                pointRadius: 0,
+                fill: false,
+                tension: 0,
+                order: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: defaults.responsive,
+            maintainAspectRatio: defaults.maintainAspectRatio,
+            plugins: {
+              legend: Object.assign({}, defaults.plugins.legend, {
+                display: true,
+              }),
+              subtitle: {
+                display: true,
+                text: "Attendance and score are derived indices from the CSV usage fields",
+                color: "#6b748f",
+                font: { family: "Courier Prime", size: 11 },
+              },
+              tooltip: Object.assign({}, defaults.plugins.tooltip, {
+                callbacks: {
+                  label: function (ctx) {
+                    if (ctx.datasetIndex === 1) {
+                      return (
+                        "Trend: y â‰ˆ " +
+                        fit.m.toFixed(3) +
+                        "x + " +
+                        fit.b.toFixed(2)
+                      );
+                    }
+                    const i = ctx.dataIndex;
+                    const nm = rows[i] ? String(rows[i].name || "") : "";
+                    const x = ctx.parsed.x;
+                    const y = ctx.parsed.y;
+                    const head = nm ? nm + ": " : "";
+                    return (
+                      head +
+                      "Derived attendance " +
+                      x.toFixed(1) +
+                      "%, derived score " +
+                      y.toFixed(1)
+                    );
+                  },
+                },
+              }),
+            },
+            scales: {
+              x: Object.assign({}, defaults.scales.x, {
+                title: {
+                  display: true,
+                  text: "Derived attendance index (%)",
+                  color: "#6b748f",
+                },
+                min: 0,
+                max: 100,
+              }),
+              y: Object.assign({}, defaults.scales.y, {
+                title: {
+                  display: true,
+                  text: "Derived final score",
+                  color: "#6b748f",
+                },
+                min: 0,
+                max: 100,
+              }),
+            },
+          },
+        });
+      }
 
-    setStatText("dCount", String(scores.length));
-    setStatText("dMin", fmt(minScore, 2));
-    setStatText("dMax", fmt(maxScore, 2));
-    setStatText("dRange", fmt(maxScore - minScore, 2));
-    setStatText("dVariance", fmt(scoreVariance, 2));
-    setStatText("dStdDev", fmt(scoreStdDev, 2));
+      /**
+       * STUDENT 2 â€” drawHistogram(canvasId, data)
+       *
+       * PURPOSE: Histogram â€” distribution of derived Final Scores in 10-point bins.
+       *          Bins: 40â€“49, 50â€“59, 60â€“69, 70â€“79, 80â€“89, 90â€“100
+       *
+       * @param {string} canvasId - 'histChart'
+       * @param {Array}  data     - window.DS array
+       *
+       * STEPS:
+       *  1. Define bins: [40,50,60,70,80,90,100]
+       *  2. Count how many students' scores fall in each bin
+       *  3. Render as a bar chart (type: 'bar') with no gap between bars
+       *     (use barPercentage: 1.0, categoryPercentage: 1.0)
+       *
+       * VISUAL REQUIREMENTS:
+       *  - Bars colored coral (#e05c6a) at 75% opacity
+       *  - X-axis labels: '40s', '50s', '60s', '70s', '80s', '90s+'
+       *  - Y-axis: Count (integer ticks)
+       */
+      function drawHistogram(canvasId, data) {
+        const rows = Array.isArray(data) ? data : [];
+        const scores = rows.map(function (r) {
+          return num(r.score);
+        });
+        const binLabels = ["<50", "50s", "60s", "70s", "80s", "90s+"];
+        const counts = [0, 0, 0, 0, 0, 0];
+        scores.forEach(function (s) {
+          if (s < 50) {
+            counts[0]++;
+          } else if (s < 60) {
+            counts[1]++;
+          } else if (s < 70) {
+            counts[2]++;
+          } else if (s < 80) {
+            counts[3]++;
+          } else if (s < 90) {
+            counts[4]++;
+          } else {
+            counts[5]++;
+          }
+        });
+        const defaults = getChartDefaults();
+        const ph = document.getElementById("histPlaceholder");
+        const canvas = document.getElementById(canvasId);
+        if (ph) {
+          ph.style.display = "none";
+        }
+        if (canvas) {
+          canvas.style.display = "block";
+        }
+        const ctx = canvas.getContext("2d");
+        window.CHARTS[canvasId] = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: binLabels,
+            datasets: [
+              {
+                label: "Count",
+                data: counts,
+                backgroundColor: "rgba(224, 92, 106, 0.75)",
+                borderColor: "rgba(224, 92, 106, 1)",
+                borderWidth: 1,
+                barPercentage: 0.85,
+                categoryPercentage: 0.9,
+              },
+            ],
+          },
+          options: {
+            responsive: defaults.responsive,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: Object.assign({}, defaults.plugins.legend, {
+                display: false,
+              }),
+              subtitle: {
+                display: true,
+                text: "Final score is a derived composite index, not a direct CSV column",
+                color: "#6b748f",
+                font: { family: "Courier Prime", size: 11 },
+              },
+              tooltip: defaults.plugins.tooltip,
+            },
+            scales: {
+              x: Object.assign({}, defaults.scales.x, {
+                title: {
+                  display: true,
+                  text: "Derived final score (10 pt bands)",
+                  color: "#6b748f",
+                },
+              }),
+              y: Object.assign({}, defaults.scales.y, {
+                title: { display: true, text: "Count", color: "#6b748f" },
+                beginAtZero: true,
+                ticks: {
+                  stepSize: 1,
+                  callback: function (value) {
+                    return Number.isInteger(value) ? value : "";
+                  },
+                },
+              }),
+            },
+          },
+        });
+      }
 
-    setStatText("rPearson", fmt(r, 4));
-    setStatText("rInterp", corrInterpretation(r));
-    setStatText("rSlope", fmt(fit.slope, 4));
-    setStatText("rIntercept", fmt(fit.intercept, 4));
-    setStatText("rSquared", fmt(fit.rSquared, 4));
-    setStatText("rEquation", equation);
-  } catch (err) {
-    console.error("Student 3: renderStats() failed.", err);
-  }
-}
+      function drawPieChart(canvasId, data) {
+        const rows = Array.isArray(data) ? data : [];
+        const order = ["A", "B", "C", "D", "F"];
+        const counts = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+        rows.forEach(function (r) {
+          const g = String(r.grade || "").toUpperCase();
+          if (counts[g] !== undefined) {
+            counts[g]++;
+          }
+        });
+        const values = order.map(function (k) {
+          return counts[k];
+        });
+        const colors = {
+          A: "#56d364",
+          B: "#f0b429",
+          C: "#3ecfcf",
+          D: "#e67e22",
+          F: "#e05c6a",
+        };
+        const bg = order.map(function (k) {
+          return colors[k] + "bf";
+        });
+        const border = order.map(function (k) {
+          return colors[k];
+        });
+        const defaults = getChartDefaults();
+        const ph = document.getElementById("piePlaceholder");
+        const canvas = document.getElementById(canvasId);
+        if (ph) {
+          ph.style.display = "none";
+        }
+        if (canvas) {
+          canvas.style.display = "block";
+        }
+        const ctx = canvas.getContext("2d");
+        window.CHARTS[canvasId] = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: order,
+            datasets: [
+              {
+                data: values,
+                backgroundColor: bg,
+                borderColor: border,
+                borderWidth: 2,
+              },
+            ],
+          },
+          options: {
+            responsive: defaults.responsive,
+            maintainAspectRatio: false,
+            cutout: "60%",
+            plugins: {
+              legend: Object.assign({}, defaults.plugins.legend, {
+                display: true,
+                position: "right",
+              }),
+              subtitle: {
+                display: true,
+                text: "Grades are A-D bands from the derived score",
+                color: "#6b748f",
+                font: { family: "Courier Prime", size: 11 },
+              },
+              tooltip: Object.assign({}, defaults.plugins.tooltip, {
+                callbacks: {
+                  label: function (ctx) {
+                    const v = ctx.raw;
+                    const sum = ctx.dataset.data.reduce(function (a, b) {
+                      return a + b;
+                    }, 0);
+                    const pct = sum ? ((v / sum) * 100).toFixed(1) : "0.0";
+                    return ctx.label + ": " + v + " (" + pct + "%)";
+                  },
+                },
+              }),
+            },
+          },
+        });
+      }
 
-/* ─────────────────────────────────────────────────────────────────
-   END OF STUDENT CONTRIBUTION ZONES
-────────────────────────────────────────────────────────────────── */
-</script>
+      function roundTo(value, places) {
+        return Number(value.toFixed(places));
+      }
 
-</body>
+      function numericValues(arr) {
+        return (Array.isArray(arr) ? arr : [])
+          .map(function (value) {
+            return Number(value);
+          })
+          .filter(Number.isFinite);
+      }
+
+      function average(arr) {
+        const values = numericValues(arr);
+        if (values.length === 0) return 0;
+        const total = values.reduce(function (sum, value) {
+          return sum + value;
+        }, 0);
+        return total / values.length;
+      }
+
+      function mean(arr) {
+        return roundTo(average(arr), 2);
+      }
+
+      function median(arr) {
+        const values = numericValues(arr).sort(function (a, b) {
+          return a - b;
+        });
+        const n = values.length;
+        if (n === 0) return 0;
+        const middle = Math.floor(n / 2);
+        const value =
+          n % 2 === 1
+            ? values[middle]
+            : (values[middle - 1] + values[middle]) / 2;
+        return roundTo(value, 2);
+      }
+
+      function mode(arr) {
+        const values = numericValues(arr);
+        if (values.length === 0) return "â€”";
+        const counts = new Map();
+        values.forEach(function (value) {
+          counts.set(value, (counts.get(value) || 0) + 1);
+        });
+        const maxCount = Math.max.apply(null, Array.from(counts.values()));
+        return Array.from(counts.entries())
+          .filter(function (entry) {
+            return entry[1] === maxCount;
+          })
+          .map(function (entry) {
+            return entry[0];
+          })
+          .sort(function (a, b) {
+            return a - b;
+          })
+          .join(" & ");
+      }
+
+      function variance(arr) {
+        const values = numericValues(arr);
+        if (values.length < 2) return 0;
+        const avg = average(values);
+        const totalSquaredDiff = values.reduce(function (sum, value) {
+          return sum + Math.pow(value - avg, 2);
+        }, 0);
+        return roundTo(totalSquaredDiff / (values.length - 1), 2);
+      }
+
+      function stdDev(arr) {
+        return roundTo(Math.sqrt(variance(arr)), 2);
+      }
+
+      function pearsonCorr(x, y) {
+        const pairs = numericPairs(x, y);
+        if (pairs.length === 0) return NaN;
+        const xs = pairs.map(function (pair) {
+          return pair[0];
+        });
+        const ys = pairs.map(function (pair) {
+          return pair[1];
+        });
+        const meanX = average(xs);
+        const meanY = average(ys);
+        let numerator = 0;
+        let sumSqX = 0;
+        let sumSqY = 0;
+        pairs.forEach(function (pair) {
+          const dx = pair[0] - meanX;
+          const dy = pair[1] - meanY;
+          numerator += dx * dy;
+          sumSqX += dx * dx;
+          sumSqY += dy * dy;
+        });
+        const denominator = Math.sqrt(sumSqX * sumSqY);
+        if (denominator === 0) return NaN;
+        return roundTo(numerator / denominator, 4);
+      }
+
+      function numericPairs(x, y) {
+        const length = Math.min(
+          Array.isArray(x) ? x.length : 0,
+          Array.isArray(y) ? y.length : 0,
+        );
+        const pairs = [];
+        for (let i = 0; i < length; i++) {
+          const xVal = Number(x[i]);
+          const yVal = Number(y[i]);
+          if (Number.isFinite(xVal) && Number.isFinite(yVal)) {
+            pairs.push([xVal, yVal]);
+          }
+        }
+        return pairs;
+      }
+
+      function linearRegression(x, y) {
+        const pairs = numericPairs(x, y);
+        if (pairs.length === 0) {
+          return { slope: NaN, intercept: NaN, rSquared: NaN };
+        }
+        const xs = pairs.map(function (pair) {
+          return pair[0];
+        });
+        const ys = pairs.map(function (pair) {
+          return pair[1];
+        });
+        const meanX = average(xs);
+        const meanY = average(ys);
+        let numerator = 0;
+        let denominator = 0;
+        pairs.forEach(function (pair) {
+          const dx = pair[0] - meanX;
+          numerator += dx * (pair[1] - meanY);
+          denominator += dx * dx;
+        });
+        if (denominator === 0) {
+          return { slope: NaN, intercept: NaN, rSquared: NaN };
+        }
+        const slope = numerator / denominator;
+        const intercept = meanY - slope * meanX;
+        const r = pearsonCorr(xs, ys);
+        return {
+          slope: roundTo(slope, 4),
+          intercept: roundTo(intercept, 4),
+          rSquared: Number.isFinite(r) ? roundTo(r * r, 4) : NaN,
+        };
+      }
+
+      function renderStats(data) {
+        try {
+          const rows = Array.isArray(data) ? data : [];
+          const scores = rows
+            .map(function (row) {
+              return Number(row.score);
+            })
+            .filter(Number.isFinite);
+          const pairs = rows
+            .map(function (row) {
+              return [Number(row.studyHours), Number(row.score)];
+            })
+            .filter(function (pair) {
+              return Number.isFinite(pair[0]) && Number.isFinite(pair[1]);
+            });
+
+          if (scores.length === 0) return;
+
+          const hours = pairs.map(function (pair) {
+            return pair[0];
+          });
+          const pairedScores = pairs.map(function (pair) {
+            return pair[1];
+          });
+          const minScore = Math.min.apply(null, scores);
+          const maxScore = Math.max.apply(null, scores);
+          const scoreMean = mean(scores);
+          const scoreMedian = median(scores);
+          const scoreMode = mode(scores);
+          const scoreVariance = variance(scores);
+          const scoreStdDev = stdDev(scores);
+          const r = pearsonCorr(hours, pairedScores);
+          const fit = linearRegression(hours, pairedScores);
+
+          function setStatText(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+          }
+
+          function fmt(value, places) {
+            return Number.isFinite(value)
+              ? Number(value).toFixed(places)
+              : "â€”";
+          }
+
+          function corrInterpretation(value) {
+            if (!Number.isFinite(value)) return "N/A";
+            if (value === 0) return "Weak No Correlation";
+            const abs = Math.abs(value);
+            const strength =
+              abs >= 0.7 ? "Strong" : abs >= 0.4 ? "Moderate" : "Weak";
+            const direction = value > 0 ? "Positive" : "Negative";
+            return strength + " " + direction + " Correlation";
+          }
+
+          const interceptSign =
+            Number.isFinite(fit.intercept) && fit.intercept < 0 ? " - " : " + ";
+          const interceptText = Number.isFinite(fit.intercept)
+            ? Math.abs(fit.intercept).toFixed(4)
+            : "â€”";
+          const equation =
+            Number.isFinite(fit.slope) && Number.isFinite(fit.intercept)
+              ? "score = " +
+                fit.slope.toFixed(4) +
+                "Â·hours" +
+                interceptSign +
+                interceptText
+              : "â€”";
+
+          setStatText("statMean", fmt(scoreMean, 2));
+          setStatText("statMedian", fmt(scoreMedian, 2));
+          setStatText("statStdDev", fmt(scoreStdDev, 2));
+          setStatText("statMode", scoreMode);
+
+          setStatText("dCount", String(scores.length));
+          setStatText("dMin", fmt(minScore, 2));
+          setStatText("dMax", fmt(maxScore, 2));
+          setStatText("dRange", fmt(maxScore - minScore, 2));
+          setStatText("dVariance", fmt(scoreVariance, 2));
+          setStatText("dStdDev", fmt(scoreStdDev, 2));
+
+          setStatText("rPearson", fmt(r, 4));
+          setStatText("rInterp", corrInterpretation(r));
+          setStatText("rSlope", fmt(fit.slope, 4));
+          setStatText("rIntercept", fmt(fit.intercept, 4));
+          setStatText("rSquared", fmt(fit.rSquared, 4));
+          setStatText("rEquation", equation);
+        } catch (err) {
+          console.error("Student 3: renderStats() failed.", err);
+        }
+      }
+    </script>
+  </body>
 </html>
